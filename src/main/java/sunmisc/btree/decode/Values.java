@@ -9,7 +9,7 @@ import java.io.*;
 import java.util.Map;
 
 public final class Values implements Objects<Map.Entry<Long, String>> {
-    private static final int PAGE_SIZE = 1024;
+    private static final int PAGE_SIZE = 512;
     private final Alloc alloc;
 
     public Values(File parent) {
