@@ -4,7 +4,6 @@ import sunmisc.btree.api.Alloc;
 
 import java.io.*;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.OptionalLong;
 import java.util.stream.Stream;
@@ -26,20 +25,6 @@ public final class CowAlloc implements Alloc {
         this.pageSize = pageSize;
     }
 
-    public static void main(final String[] args) throws IOException {
-        final CowAlloc alloc = new CowAlloc(new File("lol"), 4);
-
-        long off = alloc.allocOne(new ByteArrayInputStream(new byte[]{1,2,3}));
-        alloc.free(off);
-        System.out.println(off);
-        System.out.println("after remove "+off);
-        System.out.println(Arrays.toString(alloc.fetch(off).readAllBytes()));
-
-        off = alloc.allocOne(new ByteArrayInputStream(new byte[]{1,2,3,4}));
-        System.out.println(Arrays.toString(alloc.fetch(off).readAllBytes()));
-        System.out.println("before remove "+off);
-      //  alloc.delete();
-    }
     @Override
     public void free(final Iterable<Long> indexes) throws IOException {
         for (final Long offset : indexes) {

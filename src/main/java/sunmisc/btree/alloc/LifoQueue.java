@@ -15,33 +15,6 @@ public final class LifoQueue {
         this.origin = origin;
     }
 
-    public static void main(final String[] args) throws IOException {
-        final LifoQueue queue = new LifoQueue(new File("nodes"));
-        try {
-            queue.add(1);
-            queue.add(2);
-            queue.add(3);
-
-            OptionalLong p = queue.poll();
-            System.out.println(p);
-            p = queue.poll();
-            System.out.println(p);
-
-            p = queue.poll();
-            System.out.println(p);
-
-            p = queue.poll();
-            System.out.println(p);
-            queue.add(5);
-            p = queue.poll();
-            System.out.println(p);
-        } catch (final IOException e) {
-            throw new RuntimeException(e);
-        } finally {
-            // queue.delete();
-        }
-    }
-
     public OptionalLong poll() throws IOException {
         if (!this.origin.exists()) {
             return OptionalLong.empty();

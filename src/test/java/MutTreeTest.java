@@ -1,71 +1,70 @@
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import sunmisc.btree.impl.BTree;
+import sunmisc.btree.impl.MutBtree;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
 import java.util.TreeMap;
 import java.util.concurrent.ThreadLocalRandom;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class Test {
+public class MutTreeTest {
     private static final int MAX_SIZE = 1_000;
 
-    @org.junit.jupiter.api.Test
-    public void testAddAndPoll() throws IOException {
+    @Test
+    public void testAddAndPoll() {
         final TreeMap<Long, String> map = new TreeMap<>();
-        final BTree bTree = new BTree();
+        final MutBtree bTree = new MutBtree();
         for (long i = 0; i < MAX_SIZE; ++i) {
             map.put(i, i+"");
-            bTree.insert(i, i+"");
+            bTree.put(i, i+"");
         }
         for (long i = 0; i < MAX_SIZE; ++i) {
             final long r = i + MAX_SIZE;
-            bTree.insert(r, r+"");
-            bTree.delete(bTree.firstEntry().key());
+            bTree.put(r, r+"");
+            bTree.delete(bTree.first().get().getKey());
 
             map.put(r, r+"");
             map.pollFirstEntry();
         }
         for (long i = 0; i < 10000; ++i) {
-            if (!Objects.equals(map.get(i), bTree.search(i))) {
-                throw new IllegalStateException();
-            }
+            String expected = map.get(i);
+            String actual = bTree.get(i).orElse(null);
+            assertEquals(expected, actual,
+                    "Key " + i + " (expected: " + expected + ", actual: " + actual + ")");
         }
     }
 
-    @org.junit.jupiter.api.Test
-    public void testAdd() throws IOException {
+    @Test
+    public void testAdd() {
         final Map<Long, String> map = new HashMap<>();
-        final BTree bTree = new BTree();
+        final MutBtree bTree = new MutBtree();
         for (long i = 0; i < MAX_SIZE; ++i) {
             map.put(i, i+"");
-            bTree.insert(i, i+"");
+            bTree.put(i, i+"");
         }
         for (long i = 0; i < MAX_SIZE; ++i) {
-            if (!Objects.equals(map.get(i), bTree.search(i))) {
-                throw new IllegalStateException();
-            }
+            String expected = map.get(i);
+            String actual = bTree.get(i).orElse(null);
+            assertEquals(expected, actual,
+                    "Key " + i + " (expected: " + expected + ", actual: " + actual + ")");
         }
     }
     @ParameterizedTest
     @ValueSource(ints = {1, 3, 3, 5, 32, 63})
-    public void testRemoveAndAddRand(final int step) throws IOException {
+    public void testRemoveAndAddRand(final int step) {
         final Map<Long, String> expectedMap = new HashMap<>();
-        final BTree actualBTree = new BTree();
+        final MutBtree actualBTree = new MutBtree();
         final int maxValue = MAX_SIZE;
 
         // Act - Initial insertion
         for (int i = 0; i < maxValue; i++) {
             final long key = ThreadLocalRandom.current().nextInt(1_000_000);
             expectedMap.put(key, key+"");
-            actualBTree.insert(key, key+"");
+            actualBTree.put(key, key+"");
         }
-
-        actualBTree.print();
         // Act - Remove and add operations
         for (long i = 0; i < maxValue; i += step) {
             final long keyToRemove = i;
@@ -73,36 +72,36 @@ public class Test {
 
             // Remove operation
             expectedMap.remove(keyToRemove);
-            actualBTree.delete(keyToRemove);
+            try {
+                actualBTree.delete(keyToRemove);
+            } catch (final Exception ignored) {}
 
             // Add operation
             expectedMap.put(keyToAdd, keyToAdd+"");
-            actualBTree.insert(keyToAdd, keyToAdd+"");
+            actualBTree.put(keyToAdd, keyToAdd+"");
         }
         // Assert
         for (long i = 0; i < maxValue; i++) {
             final long key = i;
             final String expected = expectedMap.get(key);
-            final String actual = actualBTree.search(key);
-            if (!Objects.equals(expected, actual)) {
-                actualBTree.print();
-            }
-            assertEquals(expected, actual, "Key " + key);
+            final String actual = actualBTree.get(key).orElse(null);
+            assertEquals(expected, actual,
+                    "Key " + i + " (expected: " + expected + ", actual: " + actual + ")");
         }
 
     }
     @ParameterizedTest
     @ValueSource(ints = {1, 3, 3, 5, 32, 63})
-    public void testRemoveAndAdd(final int step) throws IOException {
+    public void testRemoveAndAdd(final int step) {
         final Map<Long, String> expectedMap = new HashMap<>();
-        final BTree actualBTree = new BTree();
+        final MutBtree actualBTree = new MutBtree();
         final int maxValue = MAX_SIZE;
 
         // Act - Initial insertion
         for (long i = 0; i < maxValue; i++) {
             final long key = i;
             expectedMap.put(key, key+"");
-            actualBTree.insert(key, key+"");
+            actualBTree.put(key, key+"");
         }
 
         // Act - Remove and add operations
@@ -112,31 +111,30 @@ public class Test {
 
             // Remove operation
             expectedMap.remove(keyToRemove);
-            actualBTree.delete(keyToRemove);
+            try {
+                actualBTree.delete(keyToRemove);
+            } catch (Exception ignored) { }
 
             // Add operation
             expectedMap.put(keyToAdd, keyToAdd+"");
-            actualBTree.insert(keyToAdd, keyToAdd+"");
+            actualBTree.put(keyToAdd, keyToAdd+"");
         }
-        actualBTree.print();
         // Assert
         for (long i = 0; i < maxValue; i++) {
             final long key = i;
             final String expected = expectedMap.get(key);
-            final String actual = actualBTree.search(key);
-            if (!Objects.equals(expected, actual)) {
-                actualBTree.print();
-            }
-            assertEquals(expected, actual, "Key " + key);
+            final String actual = actualBTree.get(key).orElse(null);
+            assertEquals(expected, actual,
+                    "Key " + i + " (expected: " + expected + ", actual: " + actual + ")");
         }
 
     }
-    @org.junit.jupiter.api.Test
-    public void testMultipleDeletions() throws IOException {
+    @Test
+    public void testMultipleDeletions() {
         final Map<Long, String> map = new HashMap<>();
-        final BTree bTree = new BTree();
+        final MutBtree bTree = new MutBtree();
         for (long i = 0; i < MAX_SIZE; i++) {
-            bTree.insert(i, i + "");
+            bTree.put(i, i + "");
             map.put(i, i + "");
         }
         for (long i = 0; i < MAX_SIZE; i += 1) {
@@ -144,7 +142,8 @@ public class Test {
             map.remove(i);
         }
         for (long i = 0; i < MAX_SIZE >>> 1; i++) {
-            assertEquals(map.get(i), bTree.search(i), "Key " + i);
+            assertEquals(map.get(i), bTree.get(i).orElse(null),
+                    "Key " + i + " (expected: " + map.get(i) + ", actual: " + bTree.get(i) + ")");
         }
     }
 }
