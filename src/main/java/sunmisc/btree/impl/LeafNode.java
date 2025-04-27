@@ -15,53 +15,53 @@ public final class LeafNode extends AbstractNode {
     private final LearnedModel model;
     private final List<Entry> addresses;
 
-    public LeafNode(Table table, List<Entry> keys) {
+    public LeafNode(final Table table, final List<Entry> keys) {
         super(table, new ArrayList<>());
         this.addresses = keys;
-        this.model = LearnedModel.retrain(keys());
+        this.model = LearnedModel.retrain(this.keys());
     }
 
     @Override
     public int size() {
-        return addresses.size();
+        return this.addresses.size();
     }
 
     @Override
     public IndexedNode tail() {
-        return createNewNode(Utils.tail(addresses));
+        return this.createNewNode(Utils.tail(this.addresses));
     }
 
     private IndexedNode head() {
-        return createNewNode(Utils.head(addresses));
+        return this.createNewNode(Utils.head(this.addresses));
     }
 
-    private IndexedNode createNewNode(List<Entry> keys) {
-        final Node leaf = new LeafNode(table, keys);
-        return new LazyNode(() -> leaf, table.nodes().alloc(leaf));
+    private IndexedNode createNewNode(final List<Entry> keys) {
+        final Node leaf = new LeafNode(this.table, keys);
+        return new LazyNode(() -> leaf, this.table.nodes().alloc(leaf));
     }
 
     @Override
-    public IndexedNode delete(long key) {
-        int idx = model.search(keys(), key);
+    public IndexedNode delete(final long key) {
+        final int idx = this.model.search(this.keys(), key);
         if (idx < 0) {
             throw new IllegalArgumentException();
         }
-        return createNewNode(Utils.withoutIdx(idx, addresses));
+        return this.createNewNode(Utils.withoutIdx(idx, this.addresses));
     }
 
     @Override
-    public IndexedNode merge(Node other) {
+    public IndexedNode merge(final Node other) {
         if (!other.isLeaf()) {
             throw new IllegalArgumentException("Can only merge with another Leaf node");
         }
-        List<Entry> concat = new ArrayList<>(addresses);
+        final List<Entry> concat = new ArrayList<>(this.addresses);
         other.forEach(concat::add);
-        return createNewNode(concat);
+        return this.createNewNode(concat);
     }
 
     @Override
     public List<Long> keys() {
-        return new KeyListWrapper(addresses);
+        return new KeyListWrapper(this.addresses);
     }
     @Override
     public int getMinChildren() {
@@ -74,83 +74,83 @@ public final class LeafNode extends AbstractNode {
     }
 
     @Override
-    public Split insert(long key, String value) {
-        int idx = model.search(keys(), key);
+    public Split insert(final long key, final String value) {
+        int idx = this.model.search(this.keys(), key);
 
-        Entry entry = new OEntry(key, value, table.values().alloc(Map.entry(key, value)));
+        final Entry entry = new OEntry(key, value, this.table.values().alloc(Map.entry(key, value)));
 
-        List<Entry> newKeys;
+        final List<Entry> newKeys;
         if (idx < 0) {
             idx = -idx - 1;
-            newKeys = Utils.append(idx, entry, addresses);
+            newKeys = Utils.append(idx, entry, this.addresses);
         } else {
-            newKeys = Utils.set(idx, entry, addresses);
+            newKeys = Utils.set(idx, entry, this.addresses);
         }
-        LeafNode newLeaf = new LeafNode(table, newKeys);
+        final LeafNode newLeaf = new LeafNode(this.table, newKeys);
         return newLeaf.shouldSplit()
                 ? newLeaf.split()
                 : new Split.UnarySplit(
                         new LazyNode(
                                 () -> newLeaf,
-                                table.nodes().alloc(newLeaf)
+                                this.table.nodes().alloc(newLeaf)
                         )
         );
     }
 
     public Split split() {
-        int cutoff = addresses.size() >>> 1;
-        long mid = addresses.get(cutoff).key();
+        final int cutoff = this.addresses.size() >>> 1;
+        final long mid = this.addresses.get(cutoff).key();
 
-        List<List<Entry>> keyPair = Utils.splitAt(cutoff, addresses);
-        List<Entry> thisKeys = keyPair.get(0);
-        List<Entry> otherKeys = keyPair.get(1);
+        final List<List<Entry>> keyPair = Utils.splitAt(cutoff, this.addresses);
+        final List<Entry> thisKeys = keyPair.get(0);
+        final List<Entry> otherKeys = keyPair.get(1);
 
-        IndexedNode other = createNewNode(otherKeys);
-        IndexedNode thisSplit = createNewNode(thisKeys);
+        final IndexedNode other = this.createNewNode(otherKeys);
+        final IndexedNode thisSplit = this.createNewNode(thisKeys);
         return new Split.RebalancedSplit(mid, thisSplit, other);
     }
 
     @Override
     public Optional<Entry> firstEntry() {
-        return addresses.isEmpty() ? Optional.empty() : Optional.of(addresses.getFirst());
+        return this.addresses.isEmpty() ? Optional.empty() : Optional.of(this.addresses.getFirst());
     }
 
     @Override
     public Optional<Entry> lastEntry() {
-        return addresses.isEmpty() ? Optional.empty() : Optional.of(addresses.getLast());
+        return this.addresses.isEmpty() ? Optional.empty() : Optional.of(this.addresses.getLast());
     }
 
     @Override
-    public List<IndexedNode> stealFirstKeyFrom(Node right) {
-        Entry stolenKey = right.firstEntry().orElseThrow();
+    public List<IndexedNode> stealFirstKeyFrom(final Node right) {
+        final Entry stolenKey = right.firstEntry().orElseThrow();
 
-        List<Entry> newKeys = Utils.append(
-                addresses.size(), stolenKey, addresses);
+        final List<Entry> newKeys = Utils.append(
+                this.addresses.size(), stolenKey, this.addresses);
 
         return List.of(
-                createNewNode(newKeys),
+                this.createNewNode(newKeys),
                 right.tail()
         );
     }
 
     @Override
-    public List<IndexedNode> giveLastKeyTo(Node right) {
-        Entry keyToGive = addresses.getLast();
+    public List<IndexedNode> giveLastKeyTo(final Node right) {
+        final Entry keyToGive = this.addresses.getLast();
 
-        List<Entry> rightKeys = new ArrayList<>(
+        final List<Entry> rightKeys = new ArrayList<>(
                 right.size() + 1);
         rightKeys.add(keyToGive);
         right.forEach(rightKeys::add);
 
-        return List.of(head(), createNewNode(rightKeys));
+        return List.of(this.head(), this.createNewNode(rightKeys));
     }
 
     @Override
-    public Optional<String> search(long key) {
-        int idx = model.searchEq(keys(), key);
+    public Optional<String> search(final long key) {
+        final int idx = this.model.searchEq(this.keys(), key);
         return idx < 0
                 ? Optional.empty()
-                : Optional.of(addresses.get(idx).value()).map(ValueLocation::value);
+                : Optional.of(this.addresses.get(idx).value()).map(ValueLocation::value);
     }
 
     @Override
@@ -159,25 +159,25 @@ public final class LeafNode extends AbstractNode {
     }
 
     @Override
-    public void forEach(Consumer<Entry> consumer) {
-        addresses.forEach(consumer);
+    public void forEach(final Consumer<Entry> consumer) {
+        this.addresses.forEach(consumer);
     }
 
     private static final class KeyListWrapper extends AbstractList<Long> {
         private final List<Entry> entries;
 
-        public KeyListWrapper(List<Entry> entries) {
+        public KeyListWrapper(final List<Entry> entries) {
             this.entries = entries;
         }
 
         @Override
-        public Long get(int index) {
-            return entries.get(index).key();
+        public Long get(final int index) {
+            return this.entries.get(index).key();
         }
 
         @Override
         public int size() {
-            return entries.size();
+            return this.entries.size();
         }
     }
 }

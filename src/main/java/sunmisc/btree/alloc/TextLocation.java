@@ -8,11 +8,11 @@ public record TextLocation(
 ) implements ValueLocation {
     @Override
     public String value() {
-        return value;
+        return this.value;
     }
 
     @Override
     public long offset() {
-        return location.offset();
+        return this.location.offset();
     }
 }

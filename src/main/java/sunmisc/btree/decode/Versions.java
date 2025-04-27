@@ -3,9 +3,9 @@ package sunmisc.btree.decode;
 import sunmisc.btree.alloc.CowAlloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.Alloc;
+import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.api.Location;
 import sunmisc.btree.api.Objects;
-import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.impl.LazyNode;
 
 import java.io.*;
@@ -17,12 +17,12 @@ public final class Versions implements Objects<IndexedNode> {
     private final Alloc alloc;
     private final Table table;
 
-    public Versions(Alloc alloc, Table table) {
+    public Versions(final Alloc alloc, final Table table) {
         this.alloc = alloc;
         this.table = table;
     }
 
-    public Versions(File parent, Table table) {
+    public Versions(final File parent, final Table table) {
         this(new CowAlloc(
                 new File(parent, "versions"), PAGE_SIZE),
                 table
@@ -30,56 +30,56 @@ public final class Versions implements Objects<IndexedNode> {
     }
 
     @Override
-    public Location alloc(IndexedNode node) {
+    public Location alloc(final IndexedNode node) {
         try {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            DataOutputStream data = new DataOutputStream(bytes);
+            final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            final DataOutputStream data = new DataOutputStream(bytes);
             data.writeLong(node.offset());
             return new LongLocation(
-                    alloc.allocOne(new DataInputStream(
+                    this.alloc.allocOne(new DataInputStream(
                             new ByteArrayInputStream(bytes.toByteArray())))
             );
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public IndexedNode fetch(long index) {
+    public IndexedNode fetch(final long index) {
         try {
-            DataInputStream input = new DataInputStream(alloc.fetch(index));
-            long off = input.readLong();
-            return new LazyNode(table, new LongLocation(off));
-        } catch (IOException e) {
+            final DataInputStream input = new DataInputStream(this.alloc.fetch(index));
+            final long off = input.readLong();
+            return new LazyNode(this.table, new LongLocation(off));
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void free(Iterable<Long> indexes) {
+    public void free(final Iterable<Long> indexes) {
         try {
-            for (Long index : indexes) {
-                DataInputStream input = new DataInputStream(alloc.fetch(index));
-                long off = input.readLong();
-                IndexedNode node = new LazyNode(table, new LongLocation(off));
-                List<Long> addressesNode = new LinkedList<>();
-                List<Long> addressesValues = new LinkedList<>();
-                recursiveFree(node, addressesNode, addressesValues);
+            for (final Long index : indexes) {
+                final DataInputStream input = new DataInputStream(this.alloc.fetch(index));
+                final long off = input.readLong();
+                final IndexedNode node = new LazyNode(this.table, new LongLocation(off));
+                final List<Long> addressesNode = new LinkedList<>();
+                final List<Long> addressesValues = new LinkedList<>();
+                this.recursiveFree(node, addressesNode, addressesValues);
 
-                table.nodes().free(addressesNode);
-                table.values().free(addressesValues);
-                alloc.free(index);
+                this.table.nodes().free(addressesNode);
+                this.table.values().free(addressesValues);
+                this.alloc.free(index);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
-    private void recursiveFree(IndexedNode node,
-                               List<Long> addressesNode,
-                               List<Long> addressesValues) {
+    private void recursiveFree(final IndexedNode node,
+                               final List<Long> addressesNode,
+                               final List<Long> addressesValues) {
         addressesNode.add(node.offset());
         node.children().forEach(e -> {
-            recursiveFree(e, addressesNode, addressesValues);
+            this.recursiveFree(e, addressesNode, addressesValues);
         });
         if (node.isLeaf()) {
             node.forEach(e -> {
@@ -91,8 +91,8 @@ public final class Versions implements Objects<IndexedNode> {
     @Override
     public void delete() {
         try {
-            alloc.clear();
-        } catch (IOException e) {
+            this.alloc.clear();
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

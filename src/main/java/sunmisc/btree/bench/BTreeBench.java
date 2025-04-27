@@ -32,15 +32,15 @@ public class BTreeBench {
 
     @Setup
     public void prepare() {
-        bTree = new MutBtree();
+        this.bTree = new MutBtree();
         for (long i = 0; i < MAX; ++i) {
-            bTree.put(i, i + "");
+            this.bTree.put(i, i + "");
         }
     }
 
     @Benchmark
     public Optional<String> read() {
-        long r = ThreadLocalRandom.current().nextInt(MAX);
-        return bTree.get(r);
+        final long r = ThreadLocalRandom.current().nextInt(MAX);
+        return this.bTree.get(r);
     }
 }

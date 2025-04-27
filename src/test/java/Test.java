@@ -16,14 +16,14 @@ public class Test {
 
     @org.junit.jupiter.api.Test
     public void testAddAndPoll() throws IOException {
-        TreeMap<Long, String> map = new TreeMap<>();
-        BTree bTree = new BTree();
+        final TreeMap<Long, String> map = new TreeMap<>();
+        final BTree bTree = new BTree();
         for (long i = 0; i < MAX_SIZE; ++i) {
             map.put(i, i+"");
             bTree.insert(i, i+"");
         }
         for (long i = 0; i < MAX_SIZE; ++i) {
-            long r = i + MAX_SIZE;
+            final long r = i + MAX_SIZE;
             bTree.insert(r, r+"");
             bTree.delete(bTree.firstEntry().key());
 
@@ -39,8 +39,8 @@ public class Test {
 
     @org.junit.jupiter.api.Test
     public void testAdd() throws IOException {
-        Map<Long, String> map = new HashMap<>();
-        BTree bTree = new BTree();
+        final Map<Long, String> map = new HashMap<>();
+        final BTree bTree = new BTree();
         for (long i = 0; i < MAX_SIZE; ++i) {
             map.put(i, i+"");
             bTree.insert(i, i+"");
@@ -53,14 +53,14 @@ public class Test {
     }
     @ParameterizedTest
     @ValueSource(ints = {1, 3, 3, 5, 32, 63})
-    public void testRemoveAndAddRand(int step) throws IOException {
-        Map<Long, String> expectedMap = new HashMap<>();
-        BTree actualBTree = new BTree();
-        int maxValue = MAX_SIZE;
+    public void testRemoveAndAddRand(final int step) throws IOException {
+        final Map<Long, String> expectedMap = new HashMap<>();
+        final BTree actualBTree = new BTree();
+        final int maxValue = MAX_SIZE;
 
         // Act - Initial insertion
         for (int i = 0; i < maxValue; i++) {
-            long key = ThreadLocalRandom.current().nextInt(1_000_000);
+            final long key = ThreadLocalRandom.current().nextInt(1_000_000);
             expectedMap.put(key, key+"");
             actualBTree.insert(key, key+"");
         }
@@ -68,8 +68,8 @@ public class Test {
         actualBTree.print();
         // Act - Remove and add operations
         for (long i = 0; i < maxValue; i += step) {
-            long keyToRemove = i;
-            long keyToAdd = i + step;
+            final long keyToRemove = i;
+            final long keyToAdd = i + step;
 
             // Remove operation
             expectedMap.remove(keyToRemove);
@@ -81,9 +81,9 @@ public class Test {
         }
         // Assert
         for (long i = 0; i < maxValue; i++) {
-            long key = i;
-            String expected = expectedMap.get(key);
-            String actual = actualBTree.search(key);
+            final long key = i;
+            final String expected = expectedMap.get(key);
+            final String actual = actualBTree.search(key);
             if (!Objects.equals(expected, actual)) {
                 actualBTree.print();
             }
@@ -93,22 +93,22 @@ public class Test {
     }
     @ParameterizedTest
     @ValueSource(ints = {1, 3, 3, 5, 32, 63})
-    public void testRemoveAndAdd(int step) throws IOException {
-        Map<Long, String> expectedMap = new HashMap<>();
-        BTree actualBTree = new BTree();
-        int maxValue = MAX_SIZE;
+    public void testRemoveAndAdd(final int step) throws IOException {
+        final Map<Long, String> expectedMap = new HashMap<>();
+        final BTree actualBTree = new BTree();
+        final int maxValue = MAX_SIZE;
 
         // Act - Initial insertion
         for (long i = 0; i < maxValue; i++) {
-            long key = i;
+            final long key = i;
             expectedMap.put(key, key+"");
             actualBTree.insert(key, key+"");
         }
 
         // Act - Remove and add operations
         for (long i = 0; i < maxValue; i += step) {
-            long keyToRemove = i;
-            long keyToAdd = i + step;
+            final long keyToRemove = i;
+            final long keyToAdd = i + step;
 
             // Remove operation
             expectedMap.remove(keyToRemove);
@@ -121,9 +121,9 @@ public class Test {
         actualBTree.print();
         // Assert
         for (long i = 0; i < maxValue; i++) {
-            long key = i;
-            String expected = expectedMap.get(key);
-            String actual = actualBTree.search(key);
+            final long key = i;
+            final String expected = expectedMap.get(key);
+            final String actual = actualBTree.search(key);
             if (!Objects.equals(expected, actual)) {
                 actualBTree.print();
             }
@@ -133,8 +133,8 @@ public class Test {
     }
     @org.junit.jupiter.api.Test
     public void testMultipleDeletions() throws IOException {
-        Map<Long, String> map = new HashMap<>();
-        BTree bTree = new BTree();
+        final Map<Long, String> map = new HashMap<>();
+        final BTree bTree = new BTree();
         for (long i = 0; i < MAX_SIZE; i++) {
             bTree.insert(i, i + "");
             map.put(i, i + "");

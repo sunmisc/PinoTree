@@ -13,8 +13,8 @@ public interface Alloc {
 
     InputStream fetch(long offset) throws IOException;
 
-    default void free(long offset) throws IOException {
-        free(List.of(offset));
+    default void free(final long offset) throws IOException {
+        this.free(List.of(offset));
     }
 
     void free(Iterable<Long> offsets) throws IOException;

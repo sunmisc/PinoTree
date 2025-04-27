@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 public final class InternalNode extends AbstractNode {
     private final List<Long> keys;
 
-    public InternalNode(Table table, List<Long> keys, List<IndexedNode> children) {
+    public InternalNode(final Table table, final List<Long> keys, final List<IndexedNode> children) {
         super(table, children);
         this.keys = keys;
     }
@@ -32,92 +32,92 @@ public final class InternalNode extends AbstractNode {
 
     @Override
     public List<Long> keys() {
-        return Collections.unmodifiableList(keys);
+        return Collections.unmodifiableList(this.keys);
     }
 
 
     @Override
     public IndexedNode tail() {
-        return createNewNode(Utils.tail(keys()), Utils.tail(children()));
+        return this.createNewNode(Utils.tail(this.keys()), Utils.tail(this.children()));
     }
 
     @Override
-    public void forEach(Consumer<Entry> consumer) {
-        children().forEach(child -> child.forEach(consumer));
+    public void forEach(final Consumer<Entry> consumer) {
+        this.children().forEach(child -> child.forEach(consumer));
     }
 
     private IndexedNode head() {
-        return createNewNode(Utils.head(keys()), Utils.head(children()));
+        return this.createNewNode(Utils.head(this.keys()), Utils.head(this.children()));
     }
 
-    private IndexedNode createNewNode(List<Long> keys, List<IndexedNode> children) {
-        Node node = new InternalNode(table, keys, children);
-        return new LazyNode(() -> node, table.nodes().alloc(node));
+    private IndexedNode createNewNode(final List<Long> keys, final List<IndexedNode> children) {
+        final Node node = new InternalNode(this.table, keys, children);
+        return new LazyNode(() -> node, this.table.nodes().alloc(node));
     }
 
     @Override
-    public IndexedNode merge(Node other) {
-        List<Long> toConcat = Utils.unshift(
+    public IndexedNode merge(final Node other) {
+        final List<Long> toConcat = Utils.unshift(
                 other.firstEntry().orElseThrow().key(),
                 other.keys()
         );
-        List<Long> newKeys = new ArrayList<>(keys);
+        final List<Long> newKeys = new ArrayList<>(this.keys);
         newKeys.addAll(toConcat);
-        List<IndexedNode> newChildren = new ArrayList<>(children());
+        final List<IndexedNode> newChildren = new ArrayList<>(this.children());
         newChildren.addAll(other.children());
-        return createNewNode(newKeys, newChildren);
+        return this.createNewNode(newKeys, newChildren);
     }
 
-    private IndexedNode rebalanceNode(int childIdx, IndexedNode child) {
+    private IndexedNode rebalanceNode(final int childIdx, final IndexedNode child) {
         if (child.satisfiesMinChildren()) {
-            return createNewNode(keys, withReplacedChildren(childIdx, List.of(child)));
+            return this.createNewNode(this.keys, this.withReplacedChildren(childIdx, List.of(child)));
         }
-        boolean hasRightSibling = childIdx + 1 < children().size();
-        boolean hasLeftSibling = childIdx > 0;
+        final boolean hasRightSibling = childIdx + 1 < this.children().size();
+        final boolean hasLeftSibling = childIdx > 0;
         // todo:
-        IndexedNode right = hasRightSibling ? children().get(childIdx + 1) : null;
-        IndexedNode left = hasLeftSibling ? children().get(childIdx - 1) : null;
-        int minChildren = child.getMinChildren();
+        final IndexedNode right = hasRightSibling ? this.children().get(childIdx + 1) : null;
+        final IndexedNode left = hasLeftSibling ? this.children().get(childIdx - 1) : null;
+        final int minChildren = child.getMinChildren();
 
         if (hasRightSibling && (!hasLeftSibling || right.size() >= left.size())) {
             if (right.size() <= minChildren) {
-                return withMergedChildren(childIdx, child, right);
+                return this.withMergedChildren(childIdx, child, right);
             }
-            List<IndexedNode> newNodes = child.stealFirstKeyFrom(right);
-            return createUpdatedNode(childIdx, newNodes);
+            final List<IndexedNode> newNodes = child.stealFirstKeyFrom(right);
+            return this.createUpdatedNode(childIdx, newNodes);
         } else if (hasLeftSibling) {
             if (left.size() <= minChildren) {
-                return withMergedChildren(childIdx - 1, left, child);
+                return this.withMergedChildren(childIdx - 1, left, child);
             }
-            List<IndexedNode> newNodes = left.giveLastKeyTo(child);
-            return createUpdatedNode(childIdx - 1, newNodes);
+            final List<IndexedNode> newNodes = left.giveLastKeyTo(child);
+            return this.createUpdatedNode(childIdx - 1, newNodes);
         }
-        return createNewNode(keys, withReplacedChildren(childIdx, List.of(child)));
+        return this.createNewNode(this.keys, this.withReplacedChildren(childIdx, List.of(child)));
     }
 
-    private IndexedNode createUpdatedNode(int keyIdx, List<IndexedNode> newNodes) {
-        IndexedNode left = newNodes.getFirst();
-        IndexedNode right = newNodes.getLast();
-        return createNewNode(
-                Utils.set(keyIdx, right.firstEntry().orElseThrow().key(), keys),
-                withReplacedChildren(keyIdx, List.of(left, right))
+    private IndexedNode createUpdatedNode(final int keyIdx, final List<IndexedNode> newNodes) {
+        final IndexedNode left = newNodes.getFirst();
+        final IndexedNode right = newNodes.getLast();
+        return this.createNewNode(
+                Utils.set(keyIdx, right.firstEntry().orElseThrow().key(), this.keys),
+                this.withReplacedChildren(keyIdx, List.of(left, right))
         );
     }
 
     @Override
-    public IndexedNode delete(long key) {
-        int rawIndex = Collections.binarySearch(keys(), key);
-        int index = rawIndex >= 0 ? rawIndex + 1 : -rawIndex - 1;
+    public IndexedNode delete(final long key) {
+        final int rawIndex = Collections.binarySearch(this.keys(), key);
+        final int index = rawIndex >= 0 ? rawIndex + 1 : -rawIndex - 1;
 
-        IndexedNode origChild = children().get(index);
-        IndexedNode child = origChild.delete(key);
-        return rebalanceNode(index, child);
+        final IndexedNode origChild = this.children().get(index);
+        final IndexedNode child = origChild.delete(key);
+        return this.rebalanceNode(index, child);
     }
-    public IndexedNode withMergedChildren(int leftChildIdx,
-                                          IndexedNode leftNode,
-                                          IndexedNode rightNode) {
-        IndexedNode merged = leftNode.merge(rightNode);
-        List<Long> newKeys = Utils.withoutIdx(leftChildIdx, keys());
+    public IndexedNode withMergedChildren(final int leftChildIdx,
+                                          final IndexedNode leftNode,
+                                          final IndexedNode rightNode) {
+        final IndexedNode merged = leftNode.merge(rightNode);
+        List<Long> newKeys = Utils.withoutIdx(leftChildIdx, this.keys());
         if (leftChildIdx > 0) {
             newKeys = Utils.set(
                     leftChildIdx - 1,
@@ -125,37 +125,37 @@ public final class InternalNode extends AbstractNode {
                     newKeys
             );
         }
-        List<IndexedNode> newChildren = new ArrayList<>(children());
+        final List<IndexedNode> newChildren = new ArrayList<>(this.children());
         newChildren.remove(leftChildIdx);
         newChildren.set(leftChildIdx, merged);
-        return createNewNode(newKeys, newChildren);
+        return this.createNewNode(newKeys, newChildren);
     }
 
 
     @Override
-    public List<IndexedNode> stealFirstKeyFrom(Node right) {
-        List<Long> newKeys = new ArrayList<>(keys());
+    public List<IndexedNode> stealFirstKeyFrom(final Node right) {
+        final List<Long> newKeys = new ArrayList<>(this.keys());
         newKeys.add(right.firstEntry().orElseThrow().key());
-        List<IndexedNode> newChildren = new ArrayList<>(children());
+        final List<IndexedNode> newChildren = new ArrayList<>(this.children());
         newChildren.add(right.children().getFirst());
-        return List.of(createNewNode(newKeys, newChildren), right.tail());
+        return List.of(this.createNewNode(newKeys, newChildren), right.tail());
     }
 
     @Override
-    public List<IndexedNode> giveLastKeyTo(Node right) {
-        IndexedNode stolenValue = children().getLast();
-        List<Long> newSiblingKeys = Utils.unshift(
+    public List<IndexedNode> giveLastKeyTo(final Node right) {
+        final IndexedNode stolenValue = this.children().getLast();
+        final List<Long> newSiblingKeys = Utils.unshift(
                 right.firstEntry().orElseThrow().key(),
                 right.keys());
-        List<IndexedNode> newSiblingChildren = Utils.unshift(
+        final List<IndexedNode> newSiblingChildren = Utils.unshift(
                 stolenValue,
                 right.children()
         );
-        return List.of(this.head(), createNewNode(newSiblingKeys, newSiblingChildren));
+        return List.of(this.head(), this.createNewNode(newSiblingKeys, newSiblingChildren));
     }
 
-    public List<IndexedNode> withReplacedChildren(int idx, List<IndexedNode> newChildren) {
-        List<IndexedNode> replaced = new ArrayList<>(children());
+    public List<IndexedNode> withReplacedChildren(final int idx, final List<IndexedNode> newChildren) {
+        final List<IndexedNode> replaced = new ArrayList<>(this.children());
         for (int i = 0; i < newChildren.size(); i++) {
             replaced.set(idx + i, newChildren.get(i));
         }
@@ -164,64 +164,64 @@ public final class InternalNode extends AbstractNode {
 
     @Override
     public Optional<Entry> firstEntry() {
-        return children().isEmpty() ? Optional.empty() : children().getFirst().firstEntry();
+        return this.children().isEmpty() ? Optional.empty() : this.children().getFirst().firstEntry();
     }
     @Override
     public Optional<Entry> lastEntry() {
-        return children().isEmpty() ? Optional.empty() : children().getLast().lastEntry();
+        return this.children().isEmpty() ? Optional.empty() : this.children().getLast().lastEntry();
     }
 
-    private Split split(IndexedNode src) {
-        int mid = src.keys().size() >>> 1;
-        long midVal = src.keys().get(mid);
-        IndexedNode left = createNewNode(
+    private Split split(final IndexedNode src) {
+        final int mid = src.keys().size() >>> 1;
+        final long midVal = src.keys().get(mid);
+        final IndexedNode left = this.createNewNode(
                 src.keys().subList(0, mid),
                 src.children().subList(0, mid + 1));
-        IndexedNode right = createNewNode(
+        final IndexedNode right = this.createNewNode(
                 src.keys().subList(mid + 1, src.keys().size()),
                 src.children().subList(mid + 1, src.children().size())
         );
         return new Split.RebalancedSplit(midVal, left, right);
     }
 
-    public IndexedNode withSplitChild(long idKey,
-                                      IndexedNode splitChild,
-                                      IndexedNode newChild) {
-        int childIdx = Collections.binarySearch(keys(), idKey);
-        int index = childIdx < 0 ? -childIdx - 1 : childIdx;
+    public IndexedNode withSplitChild(final long idKey,
+                                      final IndexedNode splitChild,
+                                      final IndexedNode newChild) {
+        final int childIdx = Collections.binarySearch(this.keys(), idKey);
+        final int index = childIdx < 0 ? -childIdx - 1 : childIdx;
 
-        List<Long> newKeys = Utils.append(index, idKey, keys());
-        List<IndexedNode> newChildren = Utils.append(index + 1, newChild, children());
+        final List<Long> newKeys = Utils.append(index, idKey, this.keys());
+        final List<IndexedNode> newChildren = Utils.append(index + 1, newChild, this.children());
         newChildren.set(index, splitChild);
-        return createNewNode(newKeys, newChildren);
+        return this.createNewNode(newKeys, newChildren);
     }
 
     @Override
-    public Split insert(long key, String value) {
-        int childIdx = Collections.binarySearch(keys(), key);
-        int index = childIdx < 0 ? -childIdx - 1 : childIdx + 1;
+    public Split insert(final long key, final String value) {
+        final int childIdx = Collections.binarySearch(this.keys(), key);
+        final int index = childIdx < 0 ? -childIdx - 1 : childIdx + 1;
 
-        IndexedNode child = children().get(index);
-        Split result = child.insert(key, value);
-        IndexedNode newChild = result.src();
+        final IndexedNode child = this.children().get(index);
+        final Split result = child.insert(key, value);
+        final IndexedNode newChild = result.src();
 
         if (result.rebalanced()) {
-            long medianKey = result.medianKey();
-            IndexedNode splited = withSplitChild(medianKey, newChild, result.right());
+            final long medianKey = result.medianKey();
+            final IndexedNode splited = this.withSplitChild(medianKey, newChild, result.right());
 
             return splited.shouldSplit()
-                    ? split(splited)
+                    ? this.split(splited)
                     : new Split.UnarySplit(splited);
         }
         return new Split.UnarySplit(
-                createNewNode(keys(), withReplacedChildren(index, List.of(newChild))
+                this.createNewNode(this.keys(), this.withReplacedChildren(index, List.of(newChild))
         ));
     }
 
     @Override
-    public Optional<String> search(long key) {
-        int index = Collections.binarySearch(keys(), key);
+    public Optional<String> search(final long key) {
+        int index = Collections.binarySearch(this.keys(), key);
         index = index >= 0 ? index + 1 : -index - 1;
-        return children().get(index).search(key);
+        return this.children().get(index).search(key);
     }
 }

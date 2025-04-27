@@ -3,7 +3,6 @@ package sunmisc.btree.decode;
 import sunmisc.btree.alloc.CowAlloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
-import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.impl.InternalNode;
 import sunmisc.btree.impl.LazyNode;
 import sunmisc.btree.impl.LeafNode;
@@ -17,26 +16,26 @@ public final class Nodes implements Objects<Node> {
     private final Alloc alloc;
     private final Table table;
 
-    public Nodes(File parent, Table table) {
+    public Nodes(final File parent, final Table table) {
         this(new CowAlloc(
                 new File(parent, "nodes"), PAGE_SIZE),
                 table
         );
     }
 
-    public Nodes(Alloc alloc, Table table) {
+    public Nodes(final Alloc alloc, final Table table) {
         this.alloc = alloc;
         this.table = table;
     }
 
     @Override
-    public Location alloc(Node node) {
+    public Location alloc(final Node node) {
         try {
-            ByteArrayOutputStream bytes = new ByteArrayOutputStream();
-            DataOutputStream data = new DataOutputStream(bytes);
+            final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+            final DataOutputStream data = new DataOutputStream(bytes);
 
             data.writeInt(node.children().size());
-            for (Location ks : node.children()) {
+            for (final Location ks : node.children()) {
                 data.writeLong(ks.offset());
             }
             data.writeInt(node.keys().size());
@@ -45,64 +44,64 @@ public final class Nodes implements Objects<Node> {
                     try {
                         data.writeLong(e.key());
                         data.writeLong(e.value().offset());
-                    } catch (IOException ex) {
+                    } catch (final IOException ex) {
                         throw new RuntimeException(ex);
                     }
                 });
             } else {
-                for (Long key : node.keys()) {
+                for (final Long key : node.keys()) {
                     data.writeLong(key);
                 }
             }
-            return new LongLocation(alloc.allocOne(
+            return new LongLocation(this.alloc.allocOne(
                     new ByteArrayInputStream(bytes.toByteArray()))
             );
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Node fetch(long index) {
+    public Node fetch(final long index) {
         try {
-            DataInputStream input = new DataInputStream(alloc.fetch(index));
+            final DataInputStream input = new DataInputStream(this.alloc.fetch(index));
             final int childSize = input.readInt();
             if (childSize == 0) {
                 final int keysCount = input.readInt();
-                List<Entry> keys = new ArrayList<>(keysCount);
+                final List<Entry> keys = new ArrayList<>(keysCount);
                 for (int i = 0; i < keysCount; i++) {
-                    long key = input.readLong();
-                    long loc = input.readLong();
-                    keys.add(new LazyEntry(key, loc, table.values()));
+                    final long key = input.readLong();
+                    final long loc = input.readLong();
+                    keys.add(new LazyEntry(key, loc, this.table.values()));
                 }
-                return new LeafNode(table, keys);
+                return new LeafNode(this.table, keys);
             } else {
-                List<IndexedNode> children = new ArrayList<>();
+                final List<IndexedNode> children = new ArrayList<>();
                 for (int i = 0; i < childSize; i++) {
-                    long off = input.readLong();
+                    final long off = input.readLong();
                     children.add(new LazyNode(
-                            () -> table.nodes().fetch(off),
+                            () -> this.table.nodes().fetch(off),
                             new LongLocation(off))
                     );
                 }
                 final int keysCount = input.readInt();
-                List<Long> keys = new ArrayList<>(keysCount);
+                final List<Long> keys = new ArrayList<>(keysCount);
                 for (int i = 0; i < keysCount; i++) {
-                    long key = input.readLong();
+                    final long key = input.readLong();
                     keys.add(key);
                 }
-                return new InternalNode(table, keys, children);
+                return new InternalNode(this.table, keys, children);
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void free(Iterable<Long> indexes) {
+    public void free(final Iterable<Long> indexes) {
         try {
-            alloc.free(indexes);
-        } catch (IOException e) {
+            this.alloc.free(indexes);
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -110,8 +109,8 @@ public final class Nodes implements Objects<Node> {
     @Override
     public void delete() {
         try {
-            alloc.clear();
-        } catch (IOException e) {
+            this.alloc.clear();
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

@@ -11,7 +11,7 @@ public final class OEntry implements Entry {
 
     private final Location address;
 
-    public OEntry(long key, String value, Location address) {
+    public OEntry(final long key, final String value, final Location address) {
         this.key = key;
         this.value = value;
         this.address = address;
@@ -19,11 +19,11 @@ public final class OEntry implements Entry {
 
     @Override
     public long key() {
-        return key;
+        return this.key;
     }
 
     @Override
     public ValueLocation value() {
-        return new TextLocation(value, address);
+        return new TextLocation(this.value, this.address);
     }
 }

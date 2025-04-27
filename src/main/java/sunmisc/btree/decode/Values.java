@@ -12,46 +12,46 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     private static final int PAGE_SIZE = 512;
     private final Alloc alloc;
 
-    public Values(File parent) {
+    public Values(final File parent) {
         this(new CowAlloc(
                 new File(parent, "values"),
                 PAGE_SIZE)
         );
     }
 
-    public Values(Alloc alloc) {
+    public Values(final Alloc alloc) {
         this.alloc = alloc;
     }
 
     @Override
-    public Location alloc(Map.Entry<Long, String> value) {
-        try (ByteArrayOutputStream out = new ByteArrayOutputStream();
-             DataOutputStream data = new DataOutputStream(out)) {
+    public Location alloc(final Map.Entry<Long, String> value) {
+        try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
+             final DataOutputStream data = new DataOutputStream(out)) {
             data.writeLong(value.getKey());
             data.writeUTF(value.getValue());
-            long off = alloc.allocOne(new ByteArrayInputStream(out.toByteArray()));
+            final long off = this.alloc.allocOne(new ByteArrayInputStream(out.toByteArray()));
             return () -> off;
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public Map.Entry<Long, String> fetch(long index) {
-        try (ByteArrayInputStream in = new ByteArrayInputStream(
-                alloc.fetch(index).readAllBytes());
-             DataInputStream data = new DataInputStream(in)) {
+    public Map.Entry<Long, String> fetch(final long index) {
+        try (final ByteArrayInputStream in = new ByteArrayInputStream(
+                this.alloc.fetch(index).readAllBytes());
+             final DataInputStream data = new DataInputStream(in)) {
             return Map.entry(data.readLong(), data.readUTF());
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void free(Iterable<Long> indexes) {
+    public void free(final Iterable<Long> indexes) {
         try {
-            alloc.free(indexes);
-        } catch (IOException e) {
+            this.alloc.free(indexes);
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         }
     }

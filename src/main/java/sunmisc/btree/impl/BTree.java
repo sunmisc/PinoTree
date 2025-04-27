@@ -14,70 +14,70 @@ public class BTree {
 
     public BTree() throws IOException {
         this.table = new Table("kek");
-        Node node = new LeafNode(table, new ArrayList<>());
-        this.root = new LazyNode(() -> node, table.nodes().alloc(node));
-        indexRoot = table.roots().alloc(root);
+        final Node node = new LeafNode(this.table, new ArrayList<>());
+        this.root = new LazyNode(() -> node, this.table.nodes().alloc(node));
+        this.indexRoot = this.table.roots().alloc(this.root);
     }
 
-    public void insert(long key, String value) {
-        Split split = root.insert(key, value);
-        table.roots().free(indexRoot.offset());
+    public void insert(final long key, final String value) {
+        final Split split = this.root.insert(key, value);
+        this.table.roots().free(this.indexRoot.offset());
         if (split.rebalanced()) {
-            List<IndexedNode> newChildren = List.of(split.src(), split.right());
-            Node node = new InternalNode(table, List.of(split.medianKey()), newChildren);
-            root = new LazyNode(() -> node, table.nodes().alloc(node));
+            final List<IndexedNode> newChildren = List.of(split.src(), split.right());
+            final Node node = new InternalNode(this.table, List.of(split.medianKey()), newChildren);
+            this.root = new LazyNode(() -> node, this.table.nodes().alloc(node));
         } else {
-            root = split.src();
+            this.root = split.src();
         }
-        indexRoot = table.roots().alloc(root);
+        this.indexRoot = this.table.roots().alloc(this.root);
     }
 
-    public void delete(long key) {
+    public void delete(final long key) {
         try {
-            table.roots().free(indexRoot.offset());
-            IndexedNode r = root.delete(key);
+            this.table.roots().free(this.indexRoot.offset());
+            IndexedNode r = this.root.delete(key);
             if (r.size() < 2 && !r.isLeaf()) {
                 r = r.children().getFirst();
             }
-            root = r;
-            indexRoot = table.roots().alloc(root);
-        } catch (Exception e) {
+            this.root = r;
+            this.indexRoot = this.table.roots().alloc(this.root);
+        } catch (final Exception e) {
 
         }
     }
 
-    public String search(long key) {
+    public String search(final long key) {
         try {
-            return root.search(key).orElseThrow();
-        } catch (Exception e) {
+            return this.root.search(key).orElseThrow();
+        } catch (final Exception e) {
             return null;
         }
     }
 
     public void print() {
-        printTree(root, 0);
+        this.printTree(this.root, 0);
     }
 
     public Entry firstEntry() {
-        return root.firstEntry().orElseThrow();
+        return this.root.firstEntry().orElseThrow();
     }
 
-    public void printTree(Node node, int level) {
+    public void printTree(final Node node, final int level) {
         if (node.isLeaf()) {
             System.out.print("Level " + level + " (Leaf): Keys = " + node.keys());
             System.out.println(", Values = " + node.keys());
         } else {
             System.out.println("Level " + level + " (Internal): Keys = " + node.keys());
-            for (IndexedNode child : node.children()) {
-                printTree(child, level + 1);
+            for (final IndexedNode child : node.children()) {
+                this.printTree(child, level + 1);
             }
         }
     }
     public void delete() {
-        table.delete();
+        this.table.delete();
     }
-    public static void main(String[] args) throws IOException {
-        BTree btree = new BTree();
+    public static void main(final String[] args) throws IOException {
+        final BTree btree = new BTree();
         btree.insert(1, "1");
         btree.insert(2, "2");
         btree.insert(3, "3");

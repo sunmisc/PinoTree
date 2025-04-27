@@ -39,17 +39,17 @@ public interface Node {
     int getMaxChildren();
 
     default boolean isLeaf() {
-        return size() == 0;
+        return this.size() == 0;
     }
 
     default boolean satisfiesMinChildren() {
-        return size() >= getMinChildren();
+        return this.size() >= this.getMinChildren();
     }
 
     default boolean satisfiesMaxChildren() {
-        return size() <= getMaxChildren();
+        return this.size() <= this.getMaxChildren();
     }
     default boolean shouldSplit() {
-        return !satisfiesMaxChildren();
+        return !this.satisfiesMaxChildren();
     }
 }

@@ -15,8 +15,8 @@ public final class LifoQueue {
         this.origin = origin;
     }
 
-    public static void main(String[] args) throws IOException {
-        LifoQueue queue = new LifoQueue(new File("nodes"));
+    public static void main(final String[] args) throws IOException {
+        final LifoQueue queue = new LifoQueue(new File("nodes"));
         try {
             queue.add(1);
             queue.add(2);
@@ -35,7 +35,7 @@ public final class LifoQueue {
             queue.add(5);
             p = queue.poll();
             System.out.println(p);
-        } catch (IOException e) {
+        } catch (final IOException e) {
             throw new RuntimeException(e);
         } finally {
             // queue.delete();
@@ -43,10 +43,10 @@ public final class LifoQueue {
     }
 
     public OptionalLong poll() throws IOException {
-        if (!origin.exists()) {
+        if (!this.origin.exists()) {
             return OptionalLong.empty();
         }
-        try (final RandomAccessFile raf = new RandomAccessFile(origin, "rw");
+        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw");
              final FileChannel channel = raf.getChannel();
              final FileLock lock = channel.lock()) {
 
@@ -62,10 +62,10 @@ public final class LifoQueue {
         }
     }
     public void addAll(final Iterable<Long> indexes) throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(origin, "rw");
-             FileChannel channel = raf.getChannel();
-             FileLock lock = channel.lock()) {
-            for (long idx : indexes) {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw");
+             final FileChannel channel = raf.getChannel();
+             final FileLock lock = channel.lock()) {
+            for (final long idx : indexes) {
                 final long tail = raf.length();
                 raf.seek(tail);
                 raf.writeLong(idx);
@@ -74,11 +74,11 @@ public final class LifoQueue {
     }
 
     public void add(final long index) throws IOException {
-        addAll(List.of(index));
+        this.addAll(List.of(index));
     }
 
     public void clear() throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(origin, "rw")) {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw")) {
             raf.setLength(0);
         }
     }

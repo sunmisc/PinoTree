@@ -27,13 +27,10 @@ public final class LearnedModel {
         final int r = new Random().nextInt(0, 4096 + 512);
         final int i = linearModel.searchEq(keys, r);
     }
+
     public int predict(final long key, final int upperBound) {
-        // final double raw = Math.fma(slope, key, intercept);
-        final double raw = slope * key + intercept;
+        final double raw = Math.fma(this.slope, key, this.intercept);
         final long result = Math.round(raw);
-        /*if (System.currentTimeMillis() % 1000 == 0) {
-            System.out.println("Predicting " + key + " range = (" + (Math.clamp(result, 0, upperBound - 1) - window) + ", " +(Math.clamp(result, 0, upperBound - 1) + window)+")");
-        }*/
         return Math.clamp(result, 0, upperBound);
     }
 
@@ -77,14 +74,14 @@ public final class LearnedModel {
     }
     public int searchEq(final List<Long> sortedKeys, final long key) {
         final int n = sortedKeys.size();
-        final int guess = predict(key, n);
-        int low = Math.max(0, guess - window);
-        int high = Math.min(n - 1, guess + window);
+        final int guess = this.predict(key, n);
+        int low = Math.max(0, guess - this.window);
+        int high = Math.min(n - 1, guess + this.window);
         int index = binarySearch(sortedKeys, key, low, high);
         if (index >= 0) {
             return index;
         }
-        int step = window;
+        int step = this.window;
         while (step <= high) {
             final int newLow = Math.max(0, low - step);
             // System.out.println("low range = "+newLow + " " +(newLow - 1));
@@ -132,9 +129,9 @@ public final class LearnedModel {
             if (sortedKeys.isEmpty()) {
                 return -1;
             }
-            final int guess = predict(key, sortedKeys.size());
-            int low = Math.max(0, guess - window);
-            int high = Math.min(guess + window, sortedKeys.size() - 1);
+            final int guess = this.predict(key, sortedKeys.size());
+            int low = Math.max(0, guess - this.window);
+            int high = Math.min(guess + this.window, sortedKeys.size() - 1);
 
             while (low <= high) {
                 final int mid = (low + high) >>> 1;
@@ -148,7 +145,7 @@ public final class LearnedModel {
                 }
             }
         }
-        return binSearch(sortedKeys, key);
+        return this.binSearch(sortedKeys, key);
     }
 
     public int binSearch(final List<Long> list, final long key) {

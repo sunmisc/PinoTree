@@ -10,8 +10,8 @@ public interface Objects<T> {
 
     T fetch(long index);
 
-    default void free(long index) {
-        free(List.of(index));
+    default void free(final long index) {
+        this.free(List.of(index));
     }
     void free(Iterable<Long> indexes);
 

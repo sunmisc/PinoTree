@@ -14,7 +14,7 @@ public interface Split {
         private final long median;
         private final IndexedNode left, right;
 
-        public RebalancedSplit(long median, IndexedNode left, IndexedNode right) {
+        public RebalancedSplit(final long median, final IndexedNode left, final IndexedNode right) {
             this.median = median;
             this.left = left;
             this.right = right;
@@ -22,7 +22,7 @@ public interface Split {
 
         @Override
         public long medianKey() {
-            return median;
+            return this.median;
         }
 
         @Override
@@ -32,19 +32,19 @@ public interface Split {
 
         @Override
         public IndexedNode right() {
-            return right;
+            return this.right;
         }
 
         @Override
         public IndexedNode src() {
-            return left;
+            return this.left;
         }
     }
 
     final class UnarySplit implements Split {
         private final IndexedNode origin;
 
-        public UnarySplit(IndexedNode origin) {
+        public UnarySplit(final IndexedNode origin) {
             this.origin = origin;
         }
 
@@ -65,7 +65,7 @@ public interface Split {
 
         @Override
         public IndexedNode src() {
-            return origin;
+            return this.origin;
         }
     }
 }

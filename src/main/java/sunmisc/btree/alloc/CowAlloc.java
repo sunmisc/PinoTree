@@ -14,7 +14,7 @@ public final class CowAlloc implements Alloc {
     private final int pageSize;
     private final LifoQueue removals;
 
-    public CowAlloc(File file, int pageSize) {
+    public CowAlloc(final File file, final int pageSize) {
         this.file = file;
         this.removals = new LifoQueue(new File(
                 file.getParentFile(),
@@ -26,8 +26,8 @@ public final class CowAlloc implements Alloc {
         this.pageSize = pageSize;
     }
 
-    public static void main(String[] args) throws IOException {
-        CowAlloc alloc = new CowAlloc(new File("lol"), 4);
+    public static void main(final String[] args) throws IOException {
+        final CowAlloc alloc = new CowAlloc(new File("lol"), 4);
 
         long off = alloc.allocOne(new ByteArrayInputStream(new byte[]{1,2,3}));
         alloc.free(off);
@@ -41,68 +41,68 @@ public final class CowAlloc implements Alloc {
       //  alloc.delete();
     }
     @Override
-    public void free(Iterable<Long> indexes) throws IOException {
-        for (Long offset : indexes) {
-            if ((offset - 8) % pageSize != 0) {
+    public void free(final Iterable<Long> indexes) throws IOException {
+        for (final Long offset : indexes) {
+            if ((offset - 8) % this.pageSize != 0) {
                 throw new IllegalArgumentException(String.format(
                         "offset %s must be aligned to %s",
                         offset,
-                        pageSize
+                        this.pageSize
                 ));
             }
         }
-        removals.addAll(indexes);
+        this.removals.addAll(indexes);
     }
 
     @Override
-    public long allocOne(InputStream input) throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-            byte[] bytes = input.readAllBytes();
-            if (bytes.length > pageSize) {
+    public long allocOne(final InputStream input) throws IOException {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            final byte[] bytes = input.readAllBytes();
+            if (bytes.length > this.pageSize) {
                 throw new IllegalArgumentException(String.format(
                         "stream size is larger than page size %s > %s",
-                        bytes.length, pageSize
+                        bytes.length, this.pageSize
                 ));
             }
-            long index;
-            OptionalLong polled = removals.poll();
+            final long index;
+            final OptionalLong polled = this.removals.poll();
             if (polled.isPresent()) {
                 index = polled.getAsLong();
-                write(raf, index, bytes);
+                this.write(raf, index, bytes);
             } else {
-                index = last();
-                write(raf, index, bytes);
+                index = this.last();
+                this.write(raf, index, bytes);
 
                 raf.seek(0);
-                raf.writeLong(index + pageSize);
+                raf.writeLong(index + this.pageSize);
             }
             return index;
         }
     }
 
     @Override
-    public Stream<Long> alloc(InputStream input) throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(file, "rw")) {
-            long offset = last();
-            List<Long> pages = alloc0(raf, offset, input);
+    public Stream<Long> alloc(final InputStream input) throws IOException {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            final long offset = this.last();
+            final List<Long> pages = this.alloc0(raf, offset, input);
             raf.seek(0);
-            raf.writeLong(offset + ((long) pages.size() * pageSize));
+            raf.writeLong(offset + ((long) pages.size() * this.pageSize));
             return pages.stream();
         }
     }
 
     @Override
-    public InputStream fetch(long offset) throws IOException {
-        if ((offset - 8) % pageSize != 0) {
+    public InputStream fetch(final long offset) throws IOException {
+        if ((offset - 8) % this.pageSize != 0) {
             throw new IllegalArgumentException(String.format(
                     "offset %s must be aligned to %s",
-                    offset, pageSize
+                    offset, this.pageSize
             ));
         }
-        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
             raf.seek(offset);
             // todo: channel
-            byte[] bytes = new byte[pageSize];
+            final byte[] bytes = new byte[this.pageSize];
             raf.read(bytes);
             return new ByteArrayInputStream(bytes);
         }
@@ -110,50 +110,50 @@ public final class CowAlloc implements Alloc {
 
     @Override
     public void clear() throws IOException {
-        for (long i = 8; i < last(); i += pageSize) {
-            removals.add(i);
+        for (long i = 8; i < this.last(); i += this.pageSize) {
+            this.removals.add(i);
         }
     }
 
-    private List<Long> alloc0(RandomAccessFile raf, long pos, InputStream input) throws IOException {
-        byte[] bytes = input.readAllBytes();
-        int pages = Math.ceilDiv(bytes.length, pageSize);
-        List<Long> accumulate = new ArrayList<>(pages);
+    private List<Long> alloc0(final RandomAccessFile raf, final long pos, final InputStream input) throws IOException {
+        final byte[] bytes = input.readAllBytes();
+        final int pages = Math.ceilDiv(bytes.length, this.pageSize);
+        final List<Long> accumulate = new ArrayList<>(pages);
         long offset = pos;
         for (int i = 0; i < pages; ++i) {
-            int start = i * pageSize;
-            write(raf, offset, new ByteArrayInputStream(
+            final int start = i * this.pageSize;
+            this.write(raf, offset, new ByteArrayInputStream(
                     bytes,
                     start,
-                    Math.min(bytes.length, pageSize))
+                    Math.min(bytes.length, this.pageSize))
             );
             accumulate.add(offset);
-            offset += pageSize;
+            offset += this.pageSize;
         }
         return accumulate;
     }
-    private void write(RandomAccessFile raf, long pos, byte[] bytes) throws IOException {
+    private void write(final RandomAccessFile raf, final long pos, final byte[] bytes) throws IOException {
         raf.seek(pos);
         raf.write(bytes);
     }
-    private void write(RandomAccessFile raf, long pos, InputStream stream) throws IOException {
-        final byte[] bytes = new byte[pageSize];
+    private void write(final RandomAccessFile raf, final long pos, final InputStream stream) throws IOException {
+        final byte[] bytes = new byte[this.pageSize];
         stream.read(bytes);
-        write(raf, pos, bytes);
+        this.write(raf, pos, bytes);
     }
 
     public long last() {
-        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
             return raf.readLong();
-        } catch (IOException ex) {
+        } catch (final IOException ex) {
             return 8;
         }
     }
 
     public int size() {
-        try (RandomAccessFile raf = new RandomAccessFile(file, "r")) {
-            return Math.toIntExact((raf.readLong() - 8) / pageSize);
-        } catch (IOException ex) {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
+            return Math.toIntExact((raf.readLong() - 8) / this.pageSize);
+        } catch (final IOException ex) {
             return 0;
         }
     }
