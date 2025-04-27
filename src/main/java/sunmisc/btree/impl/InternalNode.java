@@ -113,7 +113,7 @@ public final class InternalNode extends AbstractNode {
         final IndexedNode child = origChild.delete(key);
         return this.rebalanceNode(index, child);
     }
-    public IndexedNode withMergedChildren(final int leftChildIdx,
+    private IndexedNode withMergedChildren(final int leftChildIdx,
                                           final IndexedNode leftNode,
                                           final IndexedNode rightNode) {
         final IndexedNode merged = leftNode.merge(rightNode);

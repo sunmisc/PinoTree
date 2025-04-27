@@ -9,7 +9,7 @@ public final class LearnedModel {
     private final double intercept;
     private final int window;
 
-    private LearnedModel(final double slope, final double intercept, final int window) {
+    public LearnedModel(final double slope, final double intercept, final int window) {
         this.slope = slope;
         this.intercept = intercept;
         this.window = window;
@@ -36,8 +36,9 @@ public final class LearnedModel {
 
     public static LearnedModel retrain(final List<Long> sortedKeys) {
         final int n = sortedKeys.size();
-        if (n == 0) return new LearnedModel(0, 0, 1);
-
+        if (n == 0) {
+            return new LearnedModel(0, 0, 1);
+        }
         double sumX = 0, sumY = 0, sumXY = 0, sumXX = 0;
         for (int i = 0; i < n; i++) {
             final double x = sortedKeys.get(i);
@@ -53,15 +54,12 @@ public final class LearnedModel {
         final double intercept;
 
         if (Math.abs(denominator) < 1e-9) {
-            // Все ключи одинаковые — предсказываем центр массива
             slope = 0;
             intercept = n / 2.0;
         } else {
             slope = (n * sumXY - sumX * sumY) / denominator;
             intercept = (sumY - slope * sumX) / n;
         }
-
-        // Вычисление MAE при обучении
         double totalError = 0;
         for (int i = 0; i < n; i++) {
             final double predicted = slope * sortedKeys.get(i) + intercept;
@@ -69,9 +67,13 @@ public final class LearnedModel {
         }
 
         final double meanAbsError = totalError / n;
-        return new LearnedModel(slope, intercept,
-                Math.max(3, (int)Math.ceil(meanAbsError * 3)));
+        return new LearnedModel(
+                slope,
+                intercept,
+                Math.max(3, (int)Math.ceil(meanAbsError * 3))
+        );
     }
+
     public int searchEq(final List<Long> sortedKeys, final long key) {
         final int n = sortedKeys.size();
         final int guess = this.predict(key, n);
@@ -84,7 +86,6 @@ public final class LearnedModel {
         int step = this.window;
         while (step <= high) {
             final int newLow = Math.max(0, low - step);
-            // System.out.println("low range = "+newLow + " " +(newLow - 1));
             index = binarySearch(sortedKeys, key, newLow, low - 1);
             if (index >= 0) {
                 return index;
@@ -92,63 +93,56 @@ public final class LearnedModel {
             low = newLow;
 
             final int newHigh = Math.min(n - 1, high + step);
-            //  System.out.println("high range = "+(high + 1) + " " +newHigh);
             index = binarySearch(sortedKeys, key, high + 1, newHigh);
             if (index >= 0) {
                 return index;
             }
             high = newHigh;
-
-            // Удваиваем шаг
             step <<= 1;
         }
 
         return -1;
     }
 
-    // Вспомогательный метод бинарного поиска
     private static int binarySearch(final List<Long> list, final long key, final int fromIndex, final int toIndex) {
         int low = fromIndex;
         int high = toIndex;
         while (low <= high) {
-            final int mid = (low + high) >>> 1; // Безопасное вычисление середины
+            final int mid = (low + high) >>> 1;
             final long midVal = list.get(mid);
             if (midVal < key) {
                 low = mid + 1;
             } else if (midVal > key) {
                 high = mid - 1;
             } else {
-                return mid; // Ключ найден
+                return mid;
             }
         }
         return -(low + 1);
     }
-    public static boolean learned = true;
     public int search(final List<Long> sortedKeys, final long key) {
-        if (learned) {
-            if (sortedKeys.isEmpty()) {
-                return -1;
-            }
-            final int guess = this.predict(key, sortedKeys.size());
-            int low = Math.max(0, guess - this.window);
-            int high = Math.min(guess + this.window, sortedKeys.size() - 1);
+        if (sortedKeys.isEmpty()) {
+            return -1;
+        }
+        final int guess = this.predict(key, sortedKeys.size());
+        int low = Math.max(0, guess - this.window);
+        int high = Math.min(guess + this.window, sortedKeys.size() - 1);
 
-            while (low <= high) {
-                final int mid = (low + high) >>> 1;
-                final long midVal = sortedKeys.get(mid);
-                if (midVal < key) {
-                    low = mid + 1;
-                } else if (midVal > key) {
-                    high = mid - 1;
-                } else {
-                    return mid;
-                }
+        while (low <= high) {
+            final int mid = (low + high) >>> 1;
+            final long midVal = sortedKeys.get(mid);
+            if (midVal < key) {
+                low = mid + 1;
+            } else if (midVal > key) {
+                high = mid - 1;
+            } else {
+                return mid;
             }
         }
         return this.binSearch(sortedKeys, key);
     }
 
-    public int binSearch(final List<Long> list, final long key) {
+    private int binSearch(final List<Long> list, final long key) {
         return binarySearch(list, key, 0, list.size() - 1);
     }
 }

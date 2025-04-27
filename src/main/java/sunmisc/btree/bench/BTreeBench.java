@@ -22,8 +22,6 @@ public class BTreeBench {
     public static void main(final String[] args) throws RunnerException {
         final Options opt = new OptionsBuilder()
                 .include(BTreeBench.class.getSimpleName())
-                // .syncIterations(false)
-                // .addProfiler(GCProfiler.class)
                 .build();
         new Runner(opt).run();
     }
