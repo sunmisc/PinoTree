@@ -3,7 +3,7 @@ package sunmisc.btree.decode;
 import sunmisc.btree.alloc.CowAlloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
-import sunmisc.btree.impl.IndexedNode;
+import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.impl.InternalNode;
 import sunmisc.btree.impl.LazyNode;
 import sunmisc.btree.impl.LeafNode;

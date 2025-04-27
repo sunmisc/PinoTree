@@ -5,7 +5,7 @@ import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.Alloc;
 import sunmisc.btree.api.Location;
 import sunmisc.btree.api.Objects;
-import sunmisc.btree.impl.IndexedNode;
+import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.impl.LazyNode;
 
 import java.io.*;

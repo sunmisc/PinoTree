@@ -1,6 +1,7 @@
 package sunmisc.btree.impl;
 
 import sunmisc.btree.api.Entry;
+import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.api.Node;
 import sunmisc.btree.api.Split;
 import sunmisc.btree.decode.Table;
@@ -8,6 +9,7 @@ import sunmisc.btree.decode.Table;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public final class InternalNode extends AbstractNode {
@@ -41,9 +43,7 @@ public final class InternalNode extends AbstractNode {
 
     @Override
     public void forEach(Consumer<Entry> consumer) {
-        for (Node child : children()) {
-            child.forEach(consumer);
-        }
+        children().forEach(child -> child.forEach(consumer));
     }
 
     private IndexedNode head() {
@@ -57,7 +57,10 @@ public final class InternalNode extends AbstractNode {
 
     @Override
     public IndexedNode merge(Node other) {
-        List<Long> toConcat = Utils.unshift(other.firstEntry().key(), other.keys());
+        List<Long> toConcat = Utils.unshift(
+                other.firstEntry().orElseThrow().key(),
+                other.keys()
+        );
         List<Long> newKeys = new ArrayList<>(keys);
         newKeys.addAll(toConcat);
         List<IndexedNode> newChildren = new ArrayList<>(children());
@@ -96,7 +99,7 @@ public final class InternalNode extends AbstractNode {
         IndexedNode left = newNodes.getFirst();
         IndexedNode right = newNodes.getLast();
         return createNewNode(
-                Utils.set(keyIdx, right.firstEntry().key(), keys),
+                Utils.set(keyIdx, right.firstEntry().orElseThrow().key(), keys),
                 withReplacedChildren(keyIdx, List.of(left, right))
         );
     }
@@ -116,7 +119,11 @@ public final class InternalNode extends AbstractNode {
         IndexedNode merged = leftNode.merge(rightNode);
         List<Long> newKeys = Utils.withoutIdx(leftChildIdx, keys());
         if (leftChildIdx > 0) {
-            newKeys = Utils.set(leftChildIdx - 1, merged.firstEntry().key(), newKeys);
+            newKeys = Utils.set(
+                    leftChildIdx - 1,
+                    merged.firstEntry().orElseThrow().key(),
+                    newKeys
+            );
         }
         List<IndexedNode> newChildren = new ArrayList<>(children());
         newChildren.remove(leftChildIdx);
@@ -128,7 +135,7 @@ public final class InternalNode extends AbstractNode {
     @Override
     public List<IndexedNode> stealFirstKeyFrom(Node right) {
         List<Long> newKeys = new ArrayList<>(keys());
-        newKeys.add(right.firstEntry().key());
+        newKeys.add(right.firstEntry().orElseThrow().key());
         List<IndexedNode> newChildren = new ArrayList<>(children());
         newChildren.add(right.children().getFirst());
         return List.of(createNewNode(newKeys, newChildren), right.tail());
@@ -138,7 +145,7 @@ public final class InternalNode extends AbstractNode {
     public List<IndexedNode> giveLastKeyTo(Node right) {
         IndexedNode stolenValue = children().getLast();
         List<Long> newSiblingKeys = Utils.unshift(
-                right.firstEntry().key(),
+                right.firstEntry().orElseThrow().key(),
                 right.keys());
         List<IndexedNode> newSiblingChildren = Utils.unshift(
                 stolenValue,
@@ -156,9 +163,12 @@ public final class InternalNode extends AbstractNode {
     }
 
     @Override
-    public Entry firstEntry() {
-        Node node = children().getFirst();
-        return node.firstEntry();
+    public Optional<Entry> firstEntry() {
+        return children().isEmpty() ? Optional.empty() : children().getFirst().firstEntry();
+    }
+    @Override
+    public Optional<Entry> lastEntry() {
+        return children().isEmpty() ? Optional.empty() : children().getLast().lastEntry();
     }
 
     private Split split(IndexedNode src) {
@@ -209,7 +219,7 @@ public final class InternalNode extends AbstractNode {
     }
 
     @Override
-    public String search(long key) {
+    public Optional<String> search(long key) {
         int index = Collections.binarySearch(keys(), key);
         index = index >= 0 ? index + 1 : -index - 1;
         return children().get(index).search(key);

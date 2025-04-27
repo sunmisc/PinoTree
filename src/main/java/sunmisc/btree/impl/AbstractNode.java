@@ -1,5 +1,6 @@
 package sunmisc.btree.impl;
 
+import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.api.Node;
 import sunmisc.btree.decode.Table;
 

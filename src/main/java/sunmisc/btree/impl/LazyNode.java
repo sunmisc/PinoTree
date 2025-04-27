@@ -1,13 +1,11 @@
 package sunmisc.btree.impl;
 
-import sunmisc.btree.api.Entry;
-import sunmisc.btree.api.Location;
-import sunmisc.btree.api.Node;
-import sunmisc.btree.api.Split;
+import sunmisc.btree.api.*;
 import sunmisc.btree.decode.Table;
 import sunmisc.btree.utils.ConcurrentLazy;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -34,12 +32,17 @@ public final class LazyNode implements IndexedNode {
     }
 
     @Override
-    public Entry firstEntry() {
+    public Optional<Entry> firstEntry() {
         return lazy.get().firstEntry();
     }
 
     @Override
-    public String search(long key) {
+    public Optional<Entry> lastEntry() {
+        return lazy.get().lastEntry();
+    }
+
+    @Override
+    public Optional<String> search(long key) {
         return lazy.get().search(key);
     }
 

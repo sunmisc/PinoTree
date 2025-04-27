@@ -5,9 +5,9 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import sunmisc.btree.impl.BTree;
+import sunmisc.btree.impl.MutBtree;
 
-import java.io.IOException;
+import java.util.Optional;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
 
@@ -28,26 +28,19 @@ public class BTreeBench {
         new Runner(opt).run();
     }
     private static final int MAX = 1_00;
-    private BTree bTree;
+    private MutBtree bTree;
 
     @Setup
     public void prepare() {
-        try {
-            bTree = new BTree();
-            for (long i = 0; i < MAX; ++i) {
-                bTree.insert(i, i + "");
-            }
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        bTree = new MutBtree();
+        for (long i = 0; i < MAX; ++i) {
+            bTree.put(i, i + "");
         }
     }
-    @TearDown
-    public void clear() {
-        bTree.delete();
-    }
+
     @Benchmark
-    public String read() {
-        int r = ThreadLocalRandom.current().nextInt(MAX);
-        return bTree.search(r);
+    public Optional<String> read() {
+        long r = ThreadLocalRandom.current().nextInt(MAX);
+        return bTree.get(r);
     }
 }

@@ -1,7 +1,5 @@
 package sunmisc.btree.api;
 
-import sunmisc.btree.impl.IndexedNode;
-
 public interface Split {
 
     long medianKey();

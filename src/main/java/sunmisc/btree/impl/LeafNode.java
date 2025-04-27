@@ -1,9 +1,7 @@
 package sunmisc.btree.impl;
 
 import sunmisc.btree.LearnedModel;
-import sunmisc.btree.api.Entry;
-import sunmisc.btree.api.Node;
-import sunmisc.btree.api.Split;
+import sunmisc.btree.api.*;
 import sunmisc.btree.decode.OEntry;
 import sunmisc.btree.decode.Table;
 
@@ -25,7 +23,7 @@ public final class LeafNode extends AbstractNode {
 
     @Override
     public int size() {
-        return keys().size();
+        return addresses.size();
     }
 
     @Override
@@ -113,13 +111,18 @@ public final class LeafNode extends AbstractNode {
     }
 
     @Override
-    public Entry firstEntry() {
-        return addresses.getFirst();
+    public Optional<Entry> firstEntry() {
+        return addresses.isEmpty() ? Optional.empty() : Optional.of(addresses.getFirst());
+    }
+
+    @Override
+    public Optional<Entry> lastEntry() {
+        return addresses.isEmpty() ? Optional.empty() : Optional.of(addresses.getLast());
     }
 
     @Override
     public List<IndexedNode> stealFirstKeyFrom(Node right) {
-        Entry stolenKey = right.firstEntry();
+        Entry stolenKey = right.firstEntry().orElseThrow();
 
         List<Entry> newKeys = Utils.append(
                 addresses.size(), stolenKey, addresses);
@@ -143,13 +146,11 @@ public final class LeafNode extends AbstractNode {
     }
 
     @Override
-    public String search(long key) {
+    public Optional<String> search(long key) {
         int idx = model.searchEq(keys(), key);
-        if (idx < 0) {
-            throw new NoSuchElementException(key + " not found");
-        }
-        Entry entry = addresses.get(idx);
-        return entry.value().value();
+        return idx < 0
+                ? Optional.empty()
+                : Optional.of(addresses.get(idx).value()).map(ValueLocation::value);
     }
 
     @Override
@@ -159,7 +160,7 @@ public final class LeafNode extends AbstractNode {
 
     @Override
     public void forEach(Consumer<Entry> consumer) {
-        addresses.forEach(consumer::accept);
+        addresses.forEach(consumer);
     }
 
     private static final class KeyListWrapper extends AbstractList<Long> {

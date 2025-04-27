@@ -7,11 +7,11 @@ public interface Tree<K,V> extends Iterable<Map.Entry<K, V>> {
 
     void put(K key, V value);
 
-    String get(K key);
+    Optional<String> get(K key);
 
     void delete(K key);
 
-    Map.Entry<K, V> first();
+    Optional<Map.Entry<K, V>> first();
 
-    Map.Entry<K, V> last();
+    Optional<Map.Entry<K, V>> last();
 }

@@ -1,9 +1,6 @@
 package sunmisc.btree.impl;
 
-import sunmisc.btree.api.Entry;
-import sunmisc.btree.api.Location;
-import sunmisc.btree.api.Node;
-import sunmisc.btree.api.Split;
+import sunmisc.btree.api.*;
 import sunmisc.btree.decode.Table;
 
 import java.io.IOException;
@@ -51,7 +48,7 @@ public class BTree {
 
     public String search(long key) {
         try {
-            return root.search(key);
+            return root.search(key).orElseThrow();
         } catch (Exception e) {
             return null;
         }
@@ -62,7 +59,7 @@ public class BTree {
     }
 
     public Entry firstEntry() {
-        return root.firstEntry();
+        return root.firstEntry().orElseThrow();
     }
 
     public void printTree(Node node, int level) {

@@ -1,15 +1,16 @@
 package sunmisc.btree.api;
 
-import sunmisc.btree.impl.IndexedNode;
-
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 
 public interface Node {
 
-    Entry firstEntry();
+    Optional<Entry> firstEntry();
 
-    String search(long key);
+    Optional<Entry> lastEntry();
+
+    Optional<String> search(long key);
 
     Split insert(long key, String value);
 

@@ -4,6 +4,7 @@ import sunmisc.btree.api.*;
 import sunmisc.btree.decode.Table;
 
 import java.util.*;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -28,7 +29,7 @@ public final class MutBtree implements Tree<Long, String> {
             Location loc = root.getPlain();
             Split split = (loc == null
                     ? new LeafNode(table, List.of())
-                    : table.nodes().fetch(loc.offset())
+                    : table.roots().fetch(loc.offset())
             ).insert(key, value);
             IndexedNode newRoot;
             if (split.rebalanced()) {
@@ -40,17 +41,17 @@ public final class MutBtree implements Tree<Long, String> {
             } else {
                 newRoot = split.src();
             }
-            root.set(table.roots().alloc(newRoot));
+            root.setRelease(table.roots().alloc(newRoot));
         } finally {
             lock.unlock();
         }
     }
 
     @Override
-    public String get(Long key) {
+    public Optional<String> get(Long key) {
         Location loc = root.getAcquire();
         if (loc == null) {
-            throw new IllegalArgumentException("Tree is empty");
+            return Optional.empty();
         }
         IndexedNode prev = table.roots().fetch(loc.offset());
         return prev.search(key);
@@ -76,20 +77,25 @@ public final class MutBtree implements Tree<Long, String> {
     }
 
     @Override
-    public Map.Entry<Long, String> first() {
+    public Optional<Map.Entry<Long, String>> first() {
         Location loc = root.getAcquire();
-        if (loc == null) {
-            throw new IllegalArgumentException("Tree is empty");
-        }
-        IndexedNode prev = table.roots().fetch(loc.offset());
-        Entry raw = prev.firstEntry();
-        return Map.entry(raw.key(), raw.value().value());
+        return loc == null
+                ? Optional.empty()
+                : table.roots()
+                .fetch(loc.offset())
+                .firstEntry()
+                .map(raw -> Map.entry(raw.key(), raw.value().value()));
     }
 
     @Override
-    public Map.Entry<Long, String> last() {
-        // todo:
-        return Map.entry(0L, "0");
+    public Optional<Map.Entry<Long, String>> last() {
+        Location loc = root.getAcquire();
+        return loc == null
+                ? Optional.empty()
+                : table.roots()
+                .fetch(loc.offset())
+                .lastEntry()
+                .map(raw -> Map.entry(raw.key(), raw.value().value()));
     }
 
     @Override
