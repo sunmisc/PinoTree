@@ -37,7 +37,7 @@ public final class LeafNode extends AbstractNode {
 
     private IndexedNode createNewNode(final List<Entry> keys) {
         final Node leaf = new LeafNode(this.table, keys);
-        return new LazyNode(() -> leaf, this.table.nodes().alloc(leaf));
+        return new LazyNode(() -> leaf, this.table.nodes().put(leaf));
     }
 
     @Override
@@ -77,7 +77,7 @@ public final class LeafNode extends AbstractNode {
     public Split insert(final long key, final String value) {
         int idx = this.model.search(this.keys(), key);
 
-        final Entry entry = new OEntry(key, value, this.table.values().alloc(Map.entry(key, value)));
+        final Entry entry = new OEntry(key, value, this.table.values().put(Map.entry(key, value)));
 
         final List<Entry> newKeys;
         if (idx < 0) {
@@ -92,7 +92,7 @@ public final class LeafNode extends AbstractNode {
                 : new Split.UnarySplit(
                         new LazyNode(
                                 () -> newLeaf,
-                                this.table.nodes().alloc(newLeaf)
+                                this.table.nodes().put(newLeaf)
                         )
         );
     }

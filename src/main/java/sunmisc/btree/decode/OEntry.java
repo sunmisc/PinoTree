@@ -8,7 +8,6 @@ import sunmisc.btree.api.ValueLocation;
 public final class OEntry implements Entry {
     private final long key;
     private final String value;
-
     private final Location address;
 
     public OEntry(final long key, final String value, final Location address) {

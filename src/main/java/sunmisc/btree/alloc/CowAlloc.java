@@ -4,8 +4,10 @@ import sunmisc.btree.api.Alloc;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.util.OptionalLong;
+import java.util.stream.LongStream;
 import java.util.stream.Stream;
 
 public final class CowAlloc implements Alloc {
@@ -28,7 +30,7 @@ public final class CowAlloc implements Alloc {
     @Override
     public void free(final Iterable<Long> indexes) throws IOException {
         for (final Long offset : indexes) {
-            if ((offset - 8) % this.pageSize != 0) {
+            if ((offset - Long.BYTES) % this.pageSize != 0) {
                 throw new IllegalArgumentException(String.format(
                         "offset %s must be aligned to %s",
                         offset,
@@ -55,7 +57,7 @@ public final class CowAlloc implements Alloc {
                 index = polled.getAsLong();
                 this.write(raf, index, bytes);
             } else {
-                index = this.last();
+                index = this.last1();
                 this.write(raf, index, bytes);
 
                 raf.seek(0);
@@ -68,7 +70,7 @@ public final class CowAlloc implements Alloc {
     @Override
     public Stream<Long> alloc(final InputStream input) throws IOException {
         try (final RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
-            final long offset = this.last();
+            final long offset = this.last1();
             final List<Long> pages = this.alloc0(raf, offset, input);
             raf.seek(0);
             raf.writeLong(offset + ((long) pages.size() * this.pageSize));
@@ -78,7 +80,7 @@ public final class CowAlloc implements Alloc {
 
     @Override
     public InputStream fetch(final long offset) throws IOException {
-        if ((offset - 8) % this.pageSize != 0) {
+        if ((offset - Long.BYTES) % this.pageSize != 0) {
             throw new IllegalArgumentException(String.format(
                     "offset %s must be aligned to %s",
                     offset, this.pageSize
@@ -95,7 +97,7 @@ public final class CowAlloc implements Alloc {
 
     @Override
     public void clear() throws IOException {
-        for (long i = 8; i < this.last(); i += this.pageSize) {
+        for (long i = Long.BYTES; i < this.last1(); i += this.pageSize) {
             this.removals.add(i);
         }
     }
@@ -127,19 +129,38 @@ public final class CowAlloc implements Alloc {
         this.write(raf, pos, bytes);
     }
 
-    public long last() {
+    private long last1() {
         try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
             return raf.readLong();
         } catch (final IOException ex) {
-            return 8;
+            return Long.BYTES;
         }
     }
 
-    public int size() {
+    @Override
+    public long last() {
         try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
-            return Math.toIntExact((raf.readLong() - 8) / this.pageSize);
+            return Math.max(Long.BYTES, raf.readLong() - pageSize);
         } catch (final IOException ex) {
-            return 0;
+            return Long.BYTES;
         }
+    }
+
+    @Override
+    public long size() {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
+            return Math.divideExact(raf.readLong() - 8, this.pageSize);
+        } catch (final IOException ex) {
+            return 0L;
+        }
+    }
+
+    @Override
+    public Iterator<Long> iterator() {
+        final long size = size() * Long.BYTES;
+        return LongStream.iterate( Long.BYTES,
+                value -> value <= size,
+                operand -> operand + pageSize
+        ).iterator();
     }
 }

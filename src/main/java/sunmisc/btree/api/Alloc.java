@@ -5,7 +5,7 @@ import java.io.InputStream;
 import java.util.List;
 import java.util.stream.Stream;
 
-public interface Alloc {
+public interface Alloc extends Iterable<Long> {
 
     long allocOne(InputStream stream) throws IOException;
 
@@ -20,4 +20,8 @@ public interface Alloc {
     void free(Iterable<Long> offsets) throws IOException;
 
     void clear() throws IOException;
+
+    long size() throws IOException;
+
+    long last() throws IOException;
 }

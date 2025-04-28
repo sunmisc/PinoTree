@@ -3,10 +3,9 @@ package sunmisc.btree.api;
 import java.util.List;
 
 // todo:
-public interface Objects<T> {
+public interface Objects<T> extends Iterable<Location> {
 
-
-    Location alloc(T value);
+    Location put(T value);
 
     T fetch(long index);
 
@@ -14,6 +13,8 @@ public interface Objects<T> {
         this.free(List.of(index));
     }
     void free(Iterable<Long> indexes);
+
+    Location last();
 
     void delete();
 }

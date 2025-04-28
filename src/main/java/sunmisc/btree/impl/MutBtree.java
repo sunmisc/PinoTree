@@ -1,7 +1,9 @@
 package sunmisc.btree.impl;
 
+import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
 import sunmisc.btree.decode.Table;
+import sunmisc.btree.decode.TimeVersion;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
@@ -10,7 +12,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 public final class MutBtree implements Tree<Long, String> {
     private final Lock lock = new ReentrantLock();
-    private final AtomicReference<Location> root = new AtomicReference<>();
+    private final AtomicReference<Location> root;
     private final Table table;
 
     public MutBtree() {
@@ -18,7 +20,12 @@ public final class MutBtree implements Tree<Long, String> {
     }
 
     public MutBtree(final Table table) {
+        this(table, null);
+    }
+
+    public MutBtree(final Table table, Location root) {
         this.table = table;
+        this.root = new AtomicReference<>(root);
     }
 
     @Override
@@ -28,7 +35,7 @@ public final class MutBtree implements Tree<Long, String> {
             final Location loc = this.root.getPlain();
             final Split split = (loc == null
                     ? new LeafNode(this.table, List.of())
-                    : this.table.roots().fetch(loc.offset())
+                    : this.table.nodes().fetch(loc.offset())
             ).insert(key, value);
             final IndexedNode newRoot;
             if (split.rebalanced()) {
@@ -36,11 +43,13 @@ public final class MutBtree implements Tree<Long, String> {
                         List.of(split.medianKey()),
                         List.of(split.src(), split.right())
                 );
-                newRoot = new LazyNode(() -> node, this.table.nodes().alloc(node));
+                newRoot = new LazyNode(() -> node, this.table.nodes().put(node));
             } else {
                 newRoot = split.src();
             }
-            this.root.setRelease(this.table.roots().alloc(newRoot));
+            final Version version = new TimeVersion(newRoot.offset());
+            this.table.roots().put(version);
+            this.root.setRelease(version);
         } finally {
             this.lock.unlock();
         }
@@ -52,7 +61,7 @@ public final class MutBtree implements Tree<Long, String> {
         if (loc == null) {
             return Optional.empty();
         }
-        final IndexedNode prev = this.table.roots().fetch(loc.offset());
+        final Node prev = this.table.nodes().fetch(loc.offset());
         return prev.search(key);
     }
 
@@ -61,15 +70,14 @@ public final class MutBtree implements Tree<Long, String> {
         this.lock.lock();
         try {
             final Location loc = this.root.getPlain();
-            if (loc == null) {
-                throw new IllegalArgumentException("Tree is empty");
-            }
-            final IndexedNode prev = this.table.roots().fetch(loc.offset());
+            final Node prev = this.table.nodes().fetch(loc.offset());
             IndexedNode deleted = prev.delete(key);
-            if (deleted.size() < 2 && !deleted.isLeaf()) {
+            if (deleted.size() == 1 && !deleted.isLeaf()) {
                 deleted = deleted.children().getFirst();
             }
-            this.root.setRelease(this.table.roots().alloc(deleted));
+            final Version version = new TimeVersion(deleted.offset());
+            this.table.roots().put(version);
+            this.root.setRelease(version);
         } finally {
             this.lock.unlock();
         }
@@ -80,7 +88,7 @@ public final class MutBtree implements Tree<Long, String> {
         final Location loc = this.root.getAcquire();
         return loc == null
                 ? Optional.empty()
-                : this.table.roots()
+                : this.table.nodes()
                 .fetch(loc.offset())
                 .firstEntry()
                 .map(raw -> Map.entry(raw.key(), raw.value().value()));
@@ -91,7 +99,7 @@ public final class MutBtree implements Tree<Long, String> {
         final Location loc = this.root.getAcquire();
         return loc == null
                 ? Optional.empty()
-                : this.table.roots()
+                : this.table.nodes()
                 .fetch(loc.offset())
                 .lastEntry()
                 .map(raw -> Map.entry(raw.key(), raw.value().value()));
@@ -105,8 +113,15 @@ public final class MutBtree implements Tree<Long, String> {
             return Collections.emptyIterator();
         }
         final List<Map.Entry<Long, String>> res = new ArrayList<>();
-        final IndexedNode prev = this.table.roots().fetch(loc.offset());
+        final Node prev = this.table.nodes().fetch(loc.offset());
         prev.forEach(e -> res.add(Map.entry(e.key(), e.value().value())));
         return res.iterator();
+    }
+
+    @Override
+    public String toString() {
+        StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        forEach(e -> joiner.add(e.toString()));
+        return joiner.toString();
     }
 }

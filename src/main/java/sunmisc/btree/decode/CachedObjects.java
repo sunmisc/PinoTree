@@ -6,6 +6,7 @@ import sunmisc.btree.api.Location;
 import sunmisc.btree.api.Objects;
 
 import java.time.Duration;
+import java.util.Iterator;
 
 public final class CachedObjects<T> implements Objects<T> {
     private final Cache<Long, T> cache;
@@ -13,7 +14,7 @@ public final class CachedObjects<T> implements Objects<T> {
 
     public CachedObjects(final Objects<T> origin) {
         this(Caffeine.newBuilder()
-                .maximumSize(10_000)
+                .maximumSize(1024)
                 .expireAfterAccess(Duration.ofMinutes(15))
                 .build(), origin);
     }
@@ -23,8 +24,8 @@ public final class CachedObjects<T> implements Objects<T> {
     }
 
     @Override
-    public Location alloc(final T value) {
-        final Location loc = this.origin.alloc(value);
+    public Location put(final T value) {
+        final Location loc = this.origin.put(value);
         this.cache.put(loc.offset(), value);
         return loc;
     }
@@ -47,7 +48,17 @@ public final class CachedObjects<T> implements Objects<T> {
     }
 
     @Override
+    public Location last() {
+        return origin.last();
+    }
+
+    @Override
     public void delete() {
         this.cache.cleanUp();
+    }
+
+    @Override
+    public Iterator<Location> iterator() {
+        return origin.iterator();
     }
 }

@@ -13,7 +13,9 @@ public final class LazyEntry implements Entry {
     private final long key;
     private final ConcurrentLazy<ValueLocation> lazy;
 
-    public LazyEntry(final long key, final long index, final Objects<Map.Entry<Long, String>> values) {
+    public LazyEntry(final long key,
+                     final long index,
+                     final Objects<Map.Entry<Long, String>> values) {
         this.key = key;
         this.lazy = new ConcurrentLazy<>(() -> {
             final Map.Entry<Long, String> entry = values.fetch(index);

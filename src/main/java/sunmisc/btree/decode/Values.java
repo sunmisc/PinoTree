@@ -1,12 +1,15 @@
 package sunmisc.btree.decode;
 
 import sunmisc.btree.alloc.CowAlloc;
+import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.Alloc;
 import sunmisc.btree.api.Location;
 import sunmisc.btree.api.Objects;
 
 import java.io.*;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.StreamSupport;
 
 public final class Values implements Objects<Map.Entry<Long, String>> {
     private static final int PAGE_SIZE = 512;
@@ -24,7 +27,7 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     }
 
     @Override
-    public Location alloc(final Map.Entry<Long, String> value) {
+    public Location put(final Map.Entry<Long, String> value) {
         try (final ByteArrayOutputStream out = new ByteArrayOutputStream();
              final DataOutputStream data = new DataOutputStream(out)) {
             data.writeLong(value.getKey());
@@ -59,5 +62,21 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     @Override
     public void delete() {
 
+    }
+
+    @Override
+    public Location last() {
+        try {
+            return new LongLocation(alloc.last());
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Iterator<Location> iterator() {
+        return StreamSupport.stream(alloc.spliterator(), false)
+                .map(e -> (Location) new LongLocation(e))
+                .iterator();
     }
 }

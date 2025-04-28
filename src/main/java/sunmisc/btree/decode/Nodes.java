@@ -9,7 +9,10 @@ import sunmisc.btree.impl.LeafNode;
 
 import java.io.*;
 import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.stream.StreamSupport;
 
 public final class Nodes implements Objects<Node> {
     private static final int PAGE_SIZE = 1024;
@@ -29,7 +32,7 @@ public final class Nodes implements Objects<Node> {
     }
 
     @Override
-    public Location alloc(final Node node) {
+    public Location put(final Node node) {
         try {
             final ByteArrayOutputStream bytes = new ByteArrayOutputStream();
             final DataOutputStream data = new DataOutputStream(bytes);
@@ -93,15 +96,31 @@ public final class Nodes implements Objects<Node> {
                 return new InternalNode(this.table, keys, children);
             }
         } catch (final IOException e) {
-            throw new RuntimeException(e);
+            return new LeafNode(this.table, List.of());
         }
     }
 
     @Override
     public void free(final Iterable<Long> indexes) {
         try {
-            this.alloc.free(indexes);
+            final List<Long> child = new LinkedList<>();
+            final List<Long> values = new LinkedList<>();
+            for (final Long index : indexes) {
+                final IndexedNode node = new LazyNode(this.table, new LongLocation(index));
+                this.recursiveFree(node, child, values);
+            }
+            this.alloc.free(child);
+            this.table.values().free(values);
         } catch (final IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public Location last() {
+        try {
+            return new LongLocation(alloc.last());
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -113,5 +132,22 @@ public final class Nodes implements Objects<Node> {
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public Iterator<Location> iterator() {
+        return StreamSupport.stream(alloc.spliterator(), false)
+                .map(e -> (Location) new LongLocation(e))
+                .iterator();
+    }
+
+    private void recursiveFree(final IndexedNode node,
+                               final List<Long> child,
+                               final List<Long> values) {
+        node.children().forEach(e -> this.recursiveFree(e, child, values));
+        if (node.isLeaf()) {
+            node.forEach(e -> values.add(e.value().offset()));
+        }
+        child.add(node.offset());
     }
 }

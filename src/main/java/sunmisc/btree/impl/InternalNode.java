@@ -52,7 +52,7 @@ public final class InternalNode extends AbstractNode {
 
     private IndexedNode createNewNode(final List<Long> keys, final List<IndexedNode> children) {
         final Node node = new InternalNode(this.table, keys, children);
-        return new LazyNode(() -> node, this.table.nodes().alloc(node));
+        return new LazyNode(() -> node, this.table.nodes().put(node));
     }
 
     @Override
