@@ -2,8 +2,8 @@ package sunmisc.btree.impl;
 
 import sunmisc.btree.LearnedModel;
 import sunmisc.btree.api.*;
-import sunmisc.btree.decode.OEntry;
-import sunmisc.btree.decode.Table;
+import sunmisc.btree.objects.OEntry;
+import sunmisc.btree.objects.Table;
 
 import java.util.*;
 import java.util.function.Consumer;
@@ -147,7 +147,7 @@ public final class LeafNode extends AbstractNode {
 
     @Override
     public Optional<String> search(final long key) {
-        final int idx = this.model.searchEq(this.keys(), key);
+        final int idx = this.model.search(this.keys(), key);
         return idx < 0
                 ? Optional.empty()
                 : Optional.of(this.addresses.get(idx).value()).map(ValueLocation::value);

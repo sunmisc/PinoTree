@@ -1,7 +1,7 @@
 package sunmisc.btree.cli;
 
 import sunmisc.btree.api.Location;
-import sunmisc.btree.decode.Table;
+import sunmisc.btree.objects.Table;
 import sunmisc.btree.impl.MutBtree;
 
 import java.util.*;

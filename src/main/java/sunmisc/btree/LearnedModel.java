@@ -1,5 +1,6 @@
 package sunmisc.btree;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.LongStream;
@@ -25,7 +26,7 @@ public final class LearnedModel {
                 .toList();
         final LearnedModel linearModel = LearnedModel.retrain(keys);
         final int r = new Random().nextInt(0, 4096 + 512);
-        final int i = linearModel.searchEq(keys, r);
+        final int i = linearModel.search(keys, r);
     }
 
     public int predict(final long key, final int upperBound) {
@@ -74,34 +75,23 @@ public final class LearnedModel {
         );
     }
 
-    public int searchEq(final List<Long> sortedKeys, final long key) {
+    public int search(final List<Long> sortedKeys, final long key) {
         final int n = sortedKeys.size();
-        final int guess = this.predict(key, n);
-        int low = Math.max(0, guess - this.window);
-        int high = Math.min(n - 1, guess + this.window);
-        int index = binarySearch(sortedKeys, key, low, high);
+        if (n == 0) {
+            return -1;
+        }
+        final int lastIndex = n - 1;
+        final int guess = predict(key, lastIndex);
+        final int low = Math.max(0, guess - window);
+        final int high = Math.min(lastIndex, guess + window);
+        final int index = binarySearch(sortedKeys, key, low, high);
         if (index >= 0) {
             return index;
         }
-        int step = this.window;
-        while (step <= high) {
-            final int newLow = Math.max(0, low - step);
-            index = binarySearch(sortedKeys, key, newLow, low - 1);
-            if (index >= 0) {
-                return index;
-            }
-            low = newLow;
-
-            final int newHigh = Math.min(n - 1, high + step);
-            index = binarySearch(sortedKeys, key, high + 1, newHigh);
-            if (index >= 0) {
-                return index;
-            }
-            high = newHigh;
-            step <<= 1;
-        }
-
-        return -1;
+        final long pivot = sortedKeys.get(-index - 2);
+        return key > pivot
+                ? binarySearch(sortedKeys, key, high + 1, lastIndex)
+                : binarySearch(sortedKeys, key, 0, low - 1);
     }
 
     private static int binarySearch(final List<Long> list, final long key, final int fromIndex, final int toIndex) {
@@ -119,30 +109,5 @@ public final class LearnedModel {
             }
         }
         return -(low + 1);
-    }
-    public int search(final List<Long> sortedKeys, final long key) {
-        if (sortedKeys.isEmpty()) {
-            return -1;
-        }
-        final int guess = this.predict(key, sortedKeys.size());
-        int low = Math.max(0, guess - this.window);
-        int high = Math.min(guess + this.window, sortedKeys.size() - 1);
-
-        while (low <= high) {
-            final int mid = (low + high) >>> 1;
-            final long midVal = sortedKeys.get(mid);
-            if (midVal < key) {
-                low = mid + 1;
-            } else if (midVal > key) {
-                high = mid - 1;
-            } else {
-                return mid;
-            }
-        }
-        return this.binSearch(sortedKeys, key);
-    }
-
-    private int binSearch(final List<Long> list, final long key) {
-        return binarySearch(list, key, 0, list.size() - 1);
     }
 }

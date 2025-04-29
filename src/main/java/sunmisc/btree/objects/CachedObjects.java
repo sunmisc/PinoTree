@@ -1,4 +1,4 @@
-package sunmisc.btree.decode;
+package sunmisc.btree.objects;
 
 import com.github.benmanes.caffeine.cache.Cache;
 import com.github.benmanes.caffeine.cache.Caffeine;

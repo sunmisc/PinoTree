@@ -1,6 +1,6 @@
 package sunmisc.btree;
 
-import sunmisc.btree.decode.Table;
+import sunmisc.btree.objects.Table;
 import sunmisc.btree.impl.MutBtree;
 
 import java.io.IOException;

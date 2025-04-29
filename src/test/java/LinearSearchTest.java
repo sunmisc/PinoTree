@@ -22,7 +22,7 @@ public class LinearSearchTest {
                 .toList();
         LearnedModel model = LearnedModel.retrain(keys);
         for (long k : keys) {
-            int expected = model.searchEq(keys, k);
+            int expected = model.search(keys, k);
             int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +
                     " expected " + expected + " actual " + actual);
@@ -41,7 +41,7 @@ public class LinearSearchTest {
                 .toList();
         LearnedModel model = LearnedModel.retrain(keys);
         for (long k : keys) {
-            int expected = model.searchEq(keys, k);
+            int expected = model.search(keys, k);
             int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +
                     " expected " + expected + " actual " + actual);

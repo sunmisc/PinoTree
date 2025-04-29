@@ -50,7 +50,7 @@ public class LinearVsBin {
     @Benchmark
     public int linearSearch() {
         final int r = ThreadLocalRandom.current().nextInt(keys.size());
-        return linearModel.searchEq(keys, keys.get(r));
+        return linearModel.search(keys, keys.get(r));
     }
 
     @Benchmark

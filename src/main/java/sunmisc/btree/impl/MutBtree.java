@@ -1,9 +1,8 @@
 package sunmisc.btree.impl;
 
-import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
-import sunmisc.btree.decode.Table;
-import sunmisc.btree.decode.TimeVersion;
+import sunmisc.btree.objects.Table;
+import sunmisc.btree.objects.TimeVersion;
 
 import java.util.*;
 import java.util.concurrent.atomic.AtomicReference;
