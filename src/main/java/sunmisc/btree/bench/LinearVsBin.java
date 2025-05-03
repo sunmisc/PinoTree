@@ -47,7 +47,6 @@ public class LinearVsBin {
         search = new LongRegressionSearch().addAll(keys);
     }
 
-
     @Benchmark
     public int binarySearch() {
         final int r = ThreadLocalRandom.current().nextInt(keys.size());
