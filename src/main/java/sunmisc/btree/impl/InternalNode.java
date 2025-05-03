@@ -4,7 +4,7 @@ import sunmisc.btree.api.Entry;
 import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.api.Node;
 import sunmisc.btree.api.Split;
-import sunmisc.btree.decode.Table;
+import sunmisc.btree.objects.Table;
 
 import java.util.ArrayList;
 import java.util.Collections;

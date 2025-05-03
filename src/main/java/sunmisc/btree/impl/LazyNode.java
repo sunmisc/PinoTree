@@ -1,7 +1,7 @@
 package sunmisc.btree.impl;
 
 import sunmisc.btree.api.*;
-import sunmisc.btree.decode.Table;
+import sunmisc.btree.objects.Table;
 import sunmisc.btree.utils.ConcurrentLazy;
 
 import java.util.List;

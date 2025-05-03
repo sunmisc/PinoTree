@@ -1,6 +1,5 @@
-package sunmisc.btree.decode;
+package sunmisc.btree.objects;
 
-import sunmisc.btree.api.Location;
 import sunmisc.btree.api.Node;
 import sunmisc.btree.api.Objects;
 import sunmisc.btree.api.Version;
@@ -24,9 +23,9 @@ public final class Table {
         if (!file.exists()) {
             file.mkdirs();
         }
-        this.values = new Values(file);
-        this.nodes = new Nodes(file, this);
-        this.roots = new Versions(file, this);
+        this.values = new CachedObjects<>(new Values(file));
+        this.nodes = new CachedObjects<>(new Nodes(file, this));
+        this.roots = new CachedObjects<>(new Versions(file, this));
     }
 
     public Objects<Node> nodes() {

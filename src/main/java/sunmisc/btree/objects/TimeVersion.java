@@ -1,4 +1,4 @@
-package sunmisc.btree.decode;
+package sunmisc.btree.objects;
 
 import sunmisc.btree.api.Version;
 

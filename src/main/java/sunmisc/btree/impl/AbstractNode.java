@@ -2,7 +2,7 @@ package sunmisc.btree.impl;
 
 import sunmisc.btree.api.IndexedNode;
 import sunmisc.btree.api.Node;
-import sunmisc.btree.decode.Table;
+import sunmisc.btree.objects.Table;
 
 import java.util.Collections;
 import java.util.List;

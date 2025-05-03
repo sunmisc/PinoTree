@@ -5,7 +5,8 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
-import sunmisc.btree.LearnedModel;
+import sunmisc.btree.regression.LongRegressionSearch;
+import sunmisc.btree.regression.RegressionSearch;
 
 import java.util.Collections;
 import java.util.List;
@@ -33,41 +34,41 @@ public class LinearVsBin {
     @Param({"1", "2", "32", "64", "1024", "4096"})
     private int spread;
     private List<Long> keys;
-    private LearnedModel linearModel;
+    private RegressionSearch<Long> search;
 
     @Setup
     public void prepare() {
         final Random random = new Random(85312);
-        keys = LongStream.range(0, 256)
-                .map(e -> e + random.nextInt(0, spread))
-                .sorted()
+        keys = random.longs(10_000, 0, spread)
                 .distinct()
+                .sorted()
                 .boxed()
                 .toList();
-        linearModel = LearnedModel.retrain(keys);
+        search = new LongRegressionSearch().addAll(keys);
     }
 
-    @Benchmark
-    public int linearSearch() {
-        final int r = ThreadLocalRandom.current().nextInt(keys.size());
-        return linearModel.searchEq(keys, keys.get(r));
-    }
 
     @Benchmark
-    public int binSearch() {
+    public int binarySearch() {
         final int r = ThreadLocalRandom.current().nextInt(keys.size());
         return Collections.binarySearch(keys, keys.get(r));
     }
 
     @Benchmark
-    public int randlinearSearch() {
-        final int r = ThreadLocalRandom.current().nextInt(keys.size());
-        return linearModel.search(keys, r);
+    public int binarySearchRandom() {
+        final long r = ThreadLocalRandom.current().nextInt(keys.size());
+        return Collections.binarySearch(keys, r);
     }
 
     @Benchmark
-    public int randBinSearch() {
+    public int searchWithRegression() {
+        final int r = ThreadLocalRandom.current().nextInt(keys.size());
+        return search.search(keys, keys.get(r));
+    }
+
+    @Benchmark
+    public int searchRandomWithRegression() {
         final long r = ThreadLocalRandom.current().nextInt(keys.size());
-        return Collections.binarySearch(keys, r);
+        return search.search(keys, r);
     }
 }

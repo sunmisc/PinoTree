@@ -1,6 +1,7 @@
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
-import sunmisc.btree.LearnedModel;
+import sunmisc.btree.regression.LongRegressionSearch;
+import sunmisc.btree.regression.RegressionSearch;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,9 +21,9 @@ public class LinearSearchTest {
                 .sorted()
                 .boxed()
                 .toList();
-        LearnedModel model = LearnedModel.retrain(keys);
+        final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
         for (long k : keys) {
-            int expected = model.searchEq(keys, k);
+            int expected = model.search(keys, k);
             int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +
                     " expected " + expected + " actual " + actual);
@@ -39,9 +40,9 @@ public class LinearSearchTest {
                 .sorted()
                 .boxed()
                 .toList();
-        LearnedModel model = LearnedModel.retrain(keys);
+        final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
         for (long k : keys) {
-            int expected = model.searchEq(keys, k);
+            int expected = model.search(keys, k);
             int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +
                     " expected " + expected + " actual " + actual);

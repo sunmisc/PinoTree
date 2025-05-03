@@ -5,6 +5,7 @@ import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
+import sunmisc.btree.impl.LeafNode;
 import sunmisc.btree.impl.MutBtree;
 
 import java.util.Optional;
@@ -25,12 +26,15 @@ public class BTreeBench {
                 .build();
         new Runner(opt).run();
     }
-    private static final int MAX = 1_00;
+    @Param({"true", "false"})
+    private boolean learned;
+    private static final int MAX = 100;
     private MutBtree bTree;
 
     @Setup
     public void prepare() {
         this.bTree = new MutBtree();
+        LeafNode.LEARN_MODEL = learned;
         for (long i = 0; i < MAX; ++i) {
             this.bTree.put(i, i + "");
         }
