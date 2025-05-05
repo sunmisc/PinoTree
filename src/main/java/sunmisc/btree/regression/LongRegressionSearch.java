@@ -1,7 +1,5 @@
 package sunmisc.btree.regression;
 
-import sunmisc.btree.impl.LeafNode;
-
 import java.util.*;
 
 public final class LongRegressionSearch implements RegressionSearch<Long> {
@@ -36,37 +34,51 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
 
     @Override
     public RegressionSearch<Long> addAll(List<Long> values) {
-        double xx = sumXX, yy = sumYY, xy = sumXY;
         long sx = sumX;
-        int sy = sumY;
+        int sy = sumY + sumArithmeticProgression(values.size());
+        double xx = sumXX, yy = sumYY, xy = sumXY;
         int c = count;
-        for (int index = 0; index < values.size(); index++) {
-            final int fact1 = c + 1;
-            final long value = values.get(index);
-            if (c > 0) {
-                final double fact2 = (double) c / fact1;
-                final double xbar = sx / (double) c;      // Mean of value
-                final double ybar = sy / (double) c;      // Mean of index
-                final double dx = value - xbar;             // value as x
-                final double dy = index - ybar;             // index as y
-                xx += dx * dx * fact2;
-                yy += dy * dy * fact2;
-                xy += dx * dy * fact2;
-
-            }
+        int n = values.size();
+        // Accumulate sums
+        for (long value : values) {
             sx += value;
-            sy += index;
-            c = fact1;
         }
-        final double slope = xx == 0 ? 0 : xy / xx; // Guard against division-by-zero
-        final double intercept = (sy - slope * sx) / c;
+        // Update count
+        int newCount = c + n;
+        // Compute means and sums of squares in one pass
+        if (newCount > 0) {
+            double xbar = sx / (double) newCount;
+            double ybar = sy / (double) newCount;
+
+            // Compute xx, yy, xy using single loop
+            for (int i = 0; i < n; i++) {
+                double dx = values.get(i) - xbar;
+                double dy = i - ybar;
+                xx += dx * dx;
+                yy += dy * dy;
+                xy += dx * dy;
+            }
+            // Adjust for previous data if count > 0
+            if (c > 0) {
+                double dx = (sumX / (double) c) - xbar; // Approximate previous values
+                for (int i = 0; i < c; i++) {
+                    double dy = i - ybar;
+                    xx += dx * dx;
+                    yy += dy * dy;
+                    xy += dx * dy;
+                }
+            }
+        }
+        // Compute slope and intercept
+        double slope = xx != 0 ? xy / xx : 0;
+        double intercept = newCount > 0 ? (sy - slope * sx) / newCount : 0;
 
         final double errorSquare = Math.max(0, yy - xy * xy / xx);
         final int window = (int) Math.max(
                 THRESHOlD_WINDOW,
-                (3 * (Math.sqrt(errorSquare / c)))
+                Math.sqrt(errorSquare / newCount)
         );
-        return new LongRegressionSearch(sx, sy, xx, yy, xy, c, slope, intercept, window);
+        return new LongRegressionSearch(sx, sy, xx, yy, xy, newCount, slope, intercept, window);
     }
 
     @Override
@@ -169,5 +181,9 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
             }
         }
         return -(low + 1);
+    }
+    private static int sumArithmeticProgression(final int n) {
+        final int y = n - 1;
+        return (y & 1) == 0 ? n * (y >> 1) : (n >> 1) * y;
     }
 }
