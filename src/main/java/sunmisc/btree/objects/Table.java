@@ -15,7 +15,7 @@ public final class Table {
     public Table(final File file) {
         this.values = new CachedObjects<>(new Values(file));
         this.nodes = new CachedObjects<>(new Nodes(file, this));
-        this.roots = new CachedObjects<>(new Versions(file, this));
+        this.roots = new Versions(file, this);
     }
 
     public Table(final String name) {
@@ -25,7 +25,7 @@ public final class Table {
         }
         this.values = new CachedObjects<>(new Values(file));
         this.nodes = new CachedObjects<>(new Nodes(file, this));
-        this.roots = new CachedObjects<>(new Versions(file, this));
+        this.roots = new Versions(file, this);
     }
 
     public Objects<Node> nodes() {

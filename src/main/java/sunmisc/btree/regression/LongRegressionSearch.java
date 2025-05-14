@@ -1,6 +1,6 @@
 package sunmisc.btree.regression;
 
-import java.util.*;
+import java.util.List;
 
 public final class LongRegressionSearch implements RegressionSearch<Long> {
     private static final int THRESHOlD_WINDOW = 2;
@@ -155,9 +155,9 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         if (pivot < 0) {
             return index;
         }
-        return key > values.get(pivot)
-                ? binarySearch(values, key, high + 1, lastIndex)
-                : binarySearch(values, key, 0, low - 1);
+        return key > values.get(guess)
+                ? binarySearch(values, key, Math.min(high + 1, lastIndex), lastIndex)
+                : binarySearch(values, key, 0, Math.max(0, low - 1));
     }
 
     private int predict(final long key, final int upperBound) {

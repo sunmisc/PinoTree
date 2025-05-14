@@ -13,7 +13,6 @@ import static sunmisc.btree.impl.Constants.LEAF_MAX_CHILDREN;
 import static sunmisc.btree.impl.Constants.LEAF_MIN_CHILDREN;
 
 public final class LeafNode extends AbstractNode {
-    public static boolean LEARN_MODEL = true;
     private final RegressionSearch<Long> search;
     private final List<Entry> addresses;
 
@@ -24,7 +23,7 @@ public final class LeafNode extends AbstractNode {
     public LeafNode(final Table table, final List<Entry> keys, RegressionSearch<Long> search) {
         super(table, new ArrayList<>());
         this.addresses = keys;
-        this.search = search;
+        this.search = new LongRegressionSearch().addAll(new KeyListWrapper(keys));
     }
 
     @Override
@@ -53,9 +52,7 @@ public final class LeafNode extends AbstractNode {
     }
 
     private IndexedNode createNewNode(final List<Entry> keys, RegressionSearch<Long> regression) {
-        final Node leaf = LEARN_MODEL
-                ? new LeafNode(this.table, keys, regression)
-                : new LeafNode(this.table, keys);
+        final Node leaf = new LeafNode(this.table, keys, regression);
         return new LazyNode(() -> leaf, this.table.nodes().put(leaf));
     }
 
@@ -182,6 +179,18 @@ public final class LeafNode extends AbstractNode {
         return idx < 0
                 ? Optional.empty()
                 : Optional.of(this.addresses.get(idx).value()).map(ValueLocation::value);
+    }
+
+    @Override
+    public List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey) {
+        List<Map.Entry<Long, String>> result = new ArrayList<>();
+        for (Entry entry : addresses) {
+            long key = entry.key();
+            if (key >= minKey && key <= maxKey) {
+                result.add(Map.entry(key, entry.value().value()));
+            }
+        }
+        return result;
     }
 
     @Override

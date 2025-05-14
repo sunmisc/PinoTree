@@ -7,6 +7,7 @@ import sunmisc.btree.api.Objects;
 
 import java.time.Duration;
 import java.util.Iterator;
+import java.util.Optional;
 
 public final class CachedObjects<T> implements Objects<T> {
     private final Cache<Long, T> cache;
@@ -31,8 +32,8 @@ public final class CachedObjects<T> implements Objects<T> {
     }
 
     @Override
-    public T fetch(final long index) {
-        return this.cache.get(index, this.origin::fetch);
+    public T fetch(final Location index) {
+        return this.cache.get(index.offset(), aLong -> origin.fetch(index));
     }
 
     @Override
@@ -48,7 +49,7 @@ public final class CachedObjects<T> implements Objects<T> {
     }
 
     @Override
-    public Location last() {
+    public Optional<Location> last() {
         return origin.last();
     }
 

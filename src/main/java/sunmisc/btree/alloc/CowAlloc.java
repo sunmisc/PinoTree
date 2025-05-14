@@ -142,7 +142,7 @@ public final class CowAlloc implements Alloc {
         try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
             return Math.max(Long.BYTES, raf.readLong() - pageSize);
         } catch (final IOException ex) {
-            return Long.BYTES;
+            throw new RuntimeException("empty");
         }
     }
 

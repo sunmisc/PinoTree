@@ -5,6 +5,7 @@ import sunmisc.btree.objects.Table;
 import sunmisc.btree.utils.ConcurrentLazy;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
@@ -14,7 +15,7 @@ public final class LazyNode implements IndexedNode {
     private final Location offset;
 
     public LazyNode(final Table table, final Location offset) {
-        this(new ConcurrentLazy<>(() -> table.nodes().fetch(offset.offset())), offset);
+        this(new ConcurrentLazy<>(() -> table.nodes().fetch(offset)), offset);
     }
 
     public LazyNode(final Supplier<Node> supplier, final Location offset) {
@@ -94,6 +95,11 @@ public final class LazyNode implements IndexedNode {
     @Override
     public void forEach(final Consumer<Entry> consumer) {
         this.lazy.get().forEach(consumer);
+    }
+
+    @Override
+    public List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey) {
+        return lazy.get().rangeSearch(minKey, maxKey);
     }
 
     @Override

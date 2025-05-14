@@ -9,6 +9,7 @@ import sunmisc.btree.api.Objects;
 import java.io.*;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 public final class Values implements Objects<Map.Entry<Long, String>> {
@@ -40,9 +41,9 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     }
 
     @Override
-    public Map.Entry<Long, String> fetch(final long index) {
+    public Map.Entry<Long, String> fetch(final Location index) {
         try (final ByteArrayInputStream in = new ByteArrayInputStream(
-                this.alloc.fetch(index).readAllBytes());
+                this.alloc.fetch(index.offset()).readAllBytes());
              final DataInputStream data = new DataInputStream(in)) {
             return Map.entry(data.readLong(), data.readUTF());
         } catch (final IOException e) {
@@ -65,11 +66,11 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     }
 
     @Override
-    public Location last() {
+    public Optional<Location> last() {
         try {
-            return new LongLocation(alloc.last());
+            return Optional.of(new LongLocation(alloc.last()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 

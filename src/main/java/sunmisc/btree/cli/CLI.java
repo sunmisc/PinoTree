@@ -1,10 +1,12 @@
 package sunmisc.btree.cli;
 
-import sunmisc.btree.api.Location;
-import sunmisc.btree.objects.Table;
 import sunmisc.btree.impl.MutBtree;
+import sunmisc.btree.objects.Table;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Scanner;
 
 public final class CLI {
     private static final Map<String, MutBtree> trees = new HashMap<>();
@@ -88,14 +90,7 @@ public final class CLI {
         String tableName = parts[1];
         currentTree = trees.computeIfAbsent(tableName, name -> {
             Table table = new Table(name);
-            Location root;
-            try {
-                root = table.roots().fetch(table.roots().last().offset());
-            } catch (Exception e) {
-                System.out.println("Table '" + name + "' is empty. Creating new tree...");
-                root = null;
-            }
-            return new MutBtree(table, root);
+            return new MutBtree(table);
         });
         System.out.println("Switched to tree for table '" + tableName + "'.");
     }

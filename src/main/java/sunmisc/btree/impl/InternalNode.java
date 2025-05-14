@@ -6,10 +6,7 @@ import sunmisc.btree.api.Node;
 import sunmisc.btree.api.Split;
 import sunmisc.btree.objects.Table;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 
 public final class InternalNode extends AbstractNode {
@@ -223,5 +220,21 @@ public final class InternalNode extends AbstractNode {
         int index = Collections.binarySearch(this.keys(), key);
         index = index >= 0 ? index + 1 : -index - 1;
         return this.children().get(index).search(key);
+    }
+
+    @Override
+    public List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey) {
+        List<Map.Entry<Long, String>> result = new ArrayList<>();
+        int startIdx = Collections.binarySearch(keys, minKey);
+        startIdx = startIdx >= 0 ? startIdx : -startIdx - 1;
+        for (int i = startIdx; i < children().size(); i++) {
+            IndexedNode child = children().get(i);
+            if (i < keys.size() && keys.get(i) > maxKey) {
+                break;
+            }
+            result.addAll(child.rangeSearch(minKey, maxKey));
+        }
+
+        return result;
     }
 }

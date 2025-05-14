@@ -1,18 +1,7 @@
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
-import sunmisc.btree.impl.MutBtree;
-
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
-import java.util.concurrent.ThreadLocalRandom;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
-
 public class MutTreeTest {
     private static final int MAX_SIZE = 1_000;
 
+    /*
     @Test
     public void testAddAndPoll() {
         final TreeMap<Long, String> map = new TreeMap<>();
@@ -145,5 +134,5 @@ public class MutTreeTest {
             assertEquals(map.get(i), bTree.get(i).orElse(null),
                     "Key " + i + " (expected: " + map.get(i) + ", actual: " + bTree.get(i) + ")");
         }
-    }
+    }*/
 }

@@ -14,6 +14,7 @@ import java.time.ZoneId;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 public final class Versions implements Objects<Version> {
@@ -56,9 +57,9 @@ public final class Versions implements Objects<Version> {
     }
 
     @Override
-    public Version fetch(final long index) {
+    public Version fetch(final Location index) {
         try {
-            final DataInputStream input = new DataInputStream(this.alloc.fetch(index));
+            final DataInputStream input = new DataInputStream(this.alloc.fetch(index.offset()));
             final long millis = input.readLong(); // time
             final long off = input.readLong();
             final Instant instant = Instant.ofEpochMilli(millis);
@@ -97,11 +98,11 @@ public final class Versions implements Objects<Version> {
     }
 
     @Override
-    public Location last() {
+    public Optional<Location> last() {
         try {
-            return new LongLocation(alloc.last());
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            return Optional.of(new LongLocation(alloc.last()));
+        } catch (Exception e) {
+            return Optional.empty();
         }
     }
 

@@ -41,7 +41,8 @@ public class LinearSearchTest {
                 .boxed()
                 .toList();
         final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
-        for (long k : keys) {
+        for (int i = 0; i < keys.size(); i++) {
+            long k = ThreadLocalRandom.current().nextLong(0, 100_000);
             int expected = model.search(keys, k);
             int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +

@@ -3,15 +3,13 @@ package sunmisc.btree.objects;
 import sunmisc.btree.alloc.CowAlloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
+import sunmisc.btree.api.Objects;
 import sunmisc.btree.impl.InternalNode;
 import sunmisc.btree.impl.LazyNode;
 import sunmisc.btree.impl.LeafNode;
 
 import java.io.*;
-import java.util.ArrayList;
-import java.util.Iterator;
-import java.util.LinkedList;
-import java.util.List;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 public final class Nodes implements Objects<Node> {
@@ -65,9 +63,9 @@ public final class Nodes implements Objects<Node> {
     }
 
     @Override
-    public Node fetch(final long index) {
+    public Node fetch(final Location index) {
         try {
-            final DataInputStream input = new DataInputStream(this.alloc.fetch(index));
+            final DataInputStream input = new DataInputStream(this.alloc.fetch(index.offset()));
             final int childSize = input.readInt();
             if (childSize == 0) {
                 final int keysCount = input.readInt();
@@ -75,16 +73,16 @@ public final class Nodes implements Objects<Node> {
                 for (int i = 0; i < keysCount; i++) {
                     final long key = input.readLong();
                     final long loc = input.readLong();
-                    keys.add(new LazyEntry(key, loc, this.table.values()));
+                    keys.add(new LazyEntry(key, new LongLocation(loc), this.table.values()));
                 }
                 return new LeafNode(this.table, keys);
             } else {
                 final List<IndexedNode> children = new ArrayList<>();
                 for (int i = 0; i < childSize; i++) {
-                    final long off = input.readLong();
+                    final Location off = new LongLocation(input.readLong());
                     children.add(new LazyNode(
                             () -> this.table.nodes().fetch(off),
-                            new LongLocation(off))
+                            off)
                     );
                 }
                 final int keysCount = input.readInt();
@@ -117,11 +115,11 @@ public final class Nodes implements Objects<Node> {
     }
 
     @Override
-    public Location last() {
+    public Optional<Location> last() {
         try {
-            return new LongLocation(alloc.last());
+            return Optional.of(new LongLocation(alloc.last()));
         } catch (IOException e) {
-            throw new RuntimeException(e);
+            return Optional.empty();
         }
     }
 
