@@ -1,27 +1,21 @@
 package sunmisc.btree.api;
 
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
-import java.util.stream.Stream;
 
 public interface Alloc extends Iterable<Long> {
 
-    long allocOne(InputStream stream) throws IOException;
+    Page alloc() throws IOException;
 
-    Stream<Long> alloc(InputStream stream) throws IOException;
+    Page fetch(Location offset) throws IOException;
 
-    InputStream fetch(long offset) throws IOException;
-
-    default void free(final long offset) throws IOException {
+    default void free(final Location offset) throws IOException {
         this.free(List.of(offset));
     }
 
-    void free(Iterable<Long> offsets) throws IOException;
+    void free(Iterable<Location> offsets) throws IOException;
 
     void clear() throws IOException;
-
-    long size() throws IOException;
 
     long last() throws IOException;
 }

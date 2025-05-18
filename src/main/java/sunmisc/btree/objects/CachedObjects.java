@@ -8,6 +8,7 @@ import sunmisc.btree.api.Objects;
 import java.time.Duration;
 import java.util.Iterator;
 import java.util.Optional;
+import java.util.stream.StreamSupport;
 
 public final class CachedObjects<T> implements Objects<T> {
     private final Cache<Long, T> cache;
@@ -37,20 +38,24 @@ public final class CachedObjects<T> implements Objects<T> {
     }
 
     @Override
-    public void free(final long index) {
-        this.cache.invalidate(index);
+    public void free(final Location index) {
+        this.cache.invalidate(index.offset());
         this.origin.free(index);
     }
 
     @Override
-    public void free(final Iterable<Long> indexes) {
-        this.cache.invalidateAll(indexes);
+    public void free(final Iterable<Location> indexes) {
+        this.cache.invalidateAll(
+                StreamSupport.stream(indexes.spliterator(), false)
+                        .map(Location::offset)
+                        .toList()
+        );
         this.origin.free(indexes);
     }
 
     @Override
-    public Optional<Location> last() {
-        return origin.last();
+    public Optional<Location> lastIndex() {
+        return origin.lastIndex();
     }
 
     @Override

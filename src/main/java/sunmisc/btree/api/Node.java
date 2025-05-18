@@ -1,11 +1,10 @@
 package sunmisc.btree.api;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.SequencedMap;
 
-public interface Node {
+public interface Node extends Iterable<Entry>{
     Optional<Entry> firstEntry(); // Возвращает первую key-value пару узла
     Optional<Entry> lastEntry(); // Возвращает последнюю key-value пару узла
     Optional<String> search(long key); // Выполняет поиск значения по ключу
@@ -17,15 +16,21 @@ public interface Node {
     List<IndexedNode> stealFirstKeyFrom(Node right); // Перемещает первый ключ из правого узла
     List<IndexedNode> giveLastKeyTo(Node right); // Передает последний ключ правому узлу
 
-    List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey);
+    SequencedMap<Long, String> rangeSearch(long minKey, long maxKey);
 
     int size(); // Возвращает размер узла (число дочерних узлов или ключей)
-    IndexedNode tail(); // Возвращает хвостовой узел (заглушка для будущей реализации)
-    void forEach(Consumer<Entry> consumer); // Итерирует по key-value парам
-    int getMinChildren(); // Минимальное число дочерних узлов/ключей
-    int getMaxChildren(); // Максимальное число дочерних узлов/ключей
-    default boolean isLeaf() { return this.size() == 0; } // Проверяет, является ли узел листовым
-    default boolean satisfiesMinChildren() { return this.size() >= this.getMinChildren(); } // Проверяет минимальную заполненность
-    default boolean satisfiesMaxChildren() { return this.size() <= this.getMaxChildren(); } // Проверяет максимальную заполненность
+
+    @Deprecated
+    IndexedNode withoutFirst();
+
+    int minChildren(); // Минимальное число дочерних узлов/ключей
+    int maxChildren(); // Максимальное число дочерних узлов/ключей
+
+    default boolean isLeaf() {
+        return children().isEmpty();
+    }
+
+    default boolean satisfiesMinChildren() { return this.size() >= this.minChildren(); } // Проверяет минимальную заполненность
+    default boolean satisfiesMaxChildren() { return this.size() <= this.maxChildren(); } // Проверяет максимальную заполненность
     default boolean shouldSplit() { return !this.satisfiesMaxChildren(); } //
 }

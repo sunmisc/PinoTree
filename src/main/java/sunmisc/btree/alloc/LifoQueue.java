@@ -1,10 +1,10 @@
 package sunmisc.btree.alloc;
 
+import sunmisc.btree.api.Location;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.nio.channels.FileChannel;
-import java.nio.channels.FileLock;
 import java.util.List;
 import java.util.OptionalLong;
 
@@ -19,10 +19,7 @@ public final class LifoQueue {
         if (!this.origin.exists()) {
             return OptionalLong.empty();
         }
-        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw");
-             final FileChannel channel = raf.getChannel();
-             final FileLock lock = channel.lock()) {
-
+        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw")) {
             final long tail = raf.length();
             if (tail == 0) {
                 return OptionalLong.empty();
@@ -34,19 +31,18 @@ public final class LifoQueue {
             return OptionalLong.of(value);
         }
     }
-    public void addAll(final Iterable<Long> indexes) throws IOException {
-        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw");
-             final FileChannel channel = raf.getChannel();
-             final FileLock lock = channel.lock()) {
-            for (final long idx : indexes) {
-                final long tail = raf.length();
+
+    public void addAll(final Iterable<Location> indexes) throws IOException {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.origin, "rw")) {
+            final long tail = raf.length();
+            for (final Location idx : indexes) {
                 raf.seek(tail);
-                raf.writeLong(idx);
+                raf.writeLong(idx.offset());
             }
         }
     }
 
-    public void add(final long index) throws IOException {
+    public void add(final Location index) throws IOException {
         this.addAll(List.of(index));
     }
 

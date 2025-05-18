@@ -13,7 +13,7 @@ import java.util.*;
 import java.util.stream.StreamSupport;
 
 public final class Nodes implements Objects<Node> {
-    private static final int PAGE_SIZE = 1024;
+    private static final int PAGE_SIZE = 4096;
     private final Alloc alloc;
     private final Table table;
 
@@ -54,9 +54,9 @@ public final class Nodes implements Objects<Node> {
                     data.writeLong(key);
                 }
             }
-            return new LongLocation(this.alloc.allocOne(
-                    new ByteArrayInputStream(bytes.toByteArray()))
-            );
+            Page page = this.alloc.alloc();
+            page.write(new ByteArrayInputStream(bytes.toByteArray()));
+            return page;
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -65,7 +65,8 @@ public final class Nodes implements Objects<Node> {
     @Override
     public Node fetch(final Location index) {
         try {
-            final DataInputStream input = new DataInputStream(this.alloc.fetch(index.offset()));
+            final Page page = alloc.fetch(index);
+            final DataInputStream input = new DataInputStream(page.read());
             final int childSize = input.readInt();
             if (childSize == 0) {
                 final int keysCount = input.readInt();
@@ -94,17 +95,17 @@ public final class Nodes implements Objects<Node> {
                 return new InternalNode(this.table, keys, children);
             }
         } catch (final IOException e) {
-            return new LeafNode(this.table, List.of());
+            throw new RuntimeException(e);
         }
     }
 
     @Override
-    public void free(final Iterable<Long> indexes) {
+    public void free(final Iterable<Location> indexes) {
         try {
-            final List<Long> child = new LinkedList<>();
-            final List<Long> values = new LinkedList<>();
-            for (final Long index : indexes) {
-                final IndexedNode node = new LazyNode(this.table, new LongLocation(index));
+            final List<Location> child = new LinkedList<>();
+            final List<Location> values = new LinkedList<>();
+            for (final Location index : indexes) {
+                final IndexedNode node = new LazyNode(this.table, index);
                 this.recursiveFree(node, child, values);
             }
             this.alloc.free(child);
@@ -115,7 +116,7 @@ public final class Nodes implements Objects<Node> {
     }
 
     @Override
-    public Optional<Location> last() {
+    public Optional<Location> lastIndex() {
         try {
             return Optional.of(new LongLocation(alloc.last()));
         } catch (IOException e) {
@@ -140,12 +141,12 @@ public final class Nodes implements Objects<Node> {
     }
 
     private void recursiveFree(final IndexedNode node,
-                               final List<Long> child,
-                               final List<Long> values) {
+                               final List<Location> child,
+                               final List<Location> values) {
         node.children().forEach(e -> this.recursiveFree(e, child, values));
         if (node.isLeaf()) {
-            node.forEach(e -> values.add(e.value().offset()));
+            node.forEach(e -> values.add(e.value()));
         }
-        child.add(node.offset());
+        child.add(node);
     }
 }

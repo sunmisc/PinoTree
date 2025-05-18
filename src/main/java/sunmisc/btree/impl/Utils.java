@@ -27,17 +27,17 @@ public final class Utils {
     }
 
     public static <T> List<List<T>> splitAt(final int idx, final List<T> list) {
-        final List<T> left = List.copyOf(list.subList(0, idx));
-        final List<T> right = List.copyOf(list.subList(idx, list.size()));
+        final List<T> left = list.subList(0, idx);
+        final List<T> right = list.subList(idx, list.size());
         return List.of(left, right);
     }
 
-    public static <V> List<V> head(final List<V> list) {
-        return list.isEmpty() ? List.of() : List.copyOf(list.subList(0, list.size() - 1));
+    public static <V> List<V> withoutLast(final List<V> list) {
+        return list.isEmpty() ? List.of() : list.subList(0, list.size() - 1);
     }
 
-    public static <T> List<T> tail(final List<T> list) {
-        return list.isEmpty() ? List.of() : List.copyOf(list.subList(1, list.size()));
+    public static <T> List<T> withoutFirst(final List<T> list) {
+        return list.isEmpty() ? List.of() : list.subList(1, list.size());
     }
 
     public static <T> List<T> unshift(final T value, final List<T> list) {

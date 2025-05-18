@@ -1,9 +1,10 @@
 package sunmisc.btree.regression;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 public final class LongRegressionSearch implements RegressionSearch<Long> {
-    private static final int THRESHOlD_WINDOW = 2;
     private final long sumX; // Now sums value (Long)
     private final int sumY;  // Now sums index (int)
     private final double sumXX, sumYY, sumXY;
@@ -32,8 +33,9 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         this.window = window;
     }
 
+
     @Override
-    public RegressionSearch<Long> addAll(List<Long> values) {
+    public RegressionSearch<Long> addAll(final List<Long> values) {
         long sx = sumX;
         int sy = sumY + sumArithmeticProgression(values.size());
         double xx = sumXX, yy = sumYY, xy = sumXY;
@@ -45,28 +47,25 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         }
         // Update count
         int newCount = c + n;
-        // Compute means and sums of squares in one pass
-        if (newCount > 0) {
-            double xbar = sx / (double) newCount;
-            double ybar = sy / (double) newCount;
+        double xbar = sx / (double) newCount;
+        double ybar = sy / (double) newCount;
 
-            // Compute xx, yy, xy using single loop
-            for (int i = 0; i < n; i++) {
-                double dx = values.get(i) - xbar;
+        // Compute xx, yy, xy using single loop
+        for (int i = 0; i < n; i++) {
+            double dx = values.get(i) - xbar;
+            double dy = i - ybar;
+            xx += dx * dx;
+            yy += dy * dy;
+            xy += dx * dy;
+        }
+        // Adjust for previous data if count > 0
+        if (c > 0) {
+            double dx = (sumX / (double) c) - xbar; // Approximate previous values
+            for (int i = 0; i < c; i++) {
                 double dy = i - ybar;
                 xx += dx * dx;
                 yy += dy * dy;
                 xy += dx * dy;
-            }
-            // Adjust for previous data if count > 0
-            if (c > 0) {
-                double dx = (sumX / (double) c) - xbar; // Approximate previous values
-                for (int i = 0; i < c; i++) {
-                    double dy = i - ybar;
-                    xx += dx * dx;
-                    yy += dy * dy;
-                    xy += dx * dy;
-                }
             }
         }
         // Compute slope and intercept
@@ -74,17 +73,19 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         double intercept = newCount > 0 ? (sy - slope * sx) / newCount : 0;
 
         final double errorSquare = Math.max(0, yy - xy * xy / xx);
-        final int window = (int) Math.max(
-                THRESHOlD_WINDOW,
+        final int window = (int) Math.min(
+                newCount >>> 3,
                 Math.sqrt(errorSquare / newCount)
         );
         return new LongRegressionSearch(sx, sy, xx, yy, xy, newCount, slope, intercept, window);
     }
 
     @Override
-    public RegressionSearch<Long> add(int index, Long value) {
+    public RegressionSearch<Long> add(final int index, final Long value) {
         if (count == 0) {
-            return new LongRegressionSearch(0, 0, 0, 0, 0, 1, 0, 0, 1);
+            return new LongRegressionSearch(value, index,
+                    value, index,index + value,
+                    1, 0, 0, 1);
         }
         final int fact1 = count + 1;
         final double fact2 = (double) count / fact1;
@@ -102,15 +103,15 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         final double intercept = (sy - slope * sx) / fact1;
 
         final double errorSquare = Math.max(0, yy - xy * xy / xx);
-        final int window = (int) Math.max(
-                THRESHOlD_WINDOW,
-                (3 * (Math.sqrt(errorSquare / fact1)))
+        final int window = (int) Math.min(
+                Math.sqrt(errorSquare / fact1),
+                fact1 >>> 3
         );
         return new LongRegressionSearch(sx, sy, xx, yy, xy, fact1, slope, intercept, window);
     }
 
     @Override
-    public RegressionSearch<Long> remove(int index, Long value) {
+    public RegressionSearch<Long> remove(final int index, final Long value) {
         if (count == 0) {
             return this;
         }
@@ -129,10 +130,10 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         final double slope = xx == 0 ? 0 : xy / xx; // Guard against division-by-zero
         final double intercept = (sy - slope * sx) / fact1;
 
-        final double errorSquare = Math.max(0, yy - xy * xy / xx);
-        final int window = (int) Math.max(
-                THRESHOlD_WINDOW,
-                (3 * (Math.sqrt(errorSquare / fact1)))
+        final double errorSquare = yy - xy * xy / xx;
+        final int window = (int) Math.min(
+                Math.sqrt(errorSquare / fact1) * 2,
+                fact1 >>> 3
         );
         return new LongRegressionSearch(sx, sy, xx, yy, xy, fact1, slope, intercept, window);
     }
@@ -151,17 +152,13 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         if (index >= 0) {
             return index;
         }
-        final int pivot = -index - 2;
-        if (pivot < 0) {
-            return index;
-        }
         return key > values.get(guess)
-                ? binarySearch(values, key, Math.min(high + 1, lastIndex), lastIndex)
-                : binarySearch(values, key, 0, Math.max(0, low - 1));
+                ? binarySearch(values, key, Math.min(guess + 1, lastIndex), lastIndex)
+                : binarySearch(values, key, 0, Math.max(0, guess - 1));
     }
 
     private int predict(final long key, final int upperBound) {
-        final double raw = slope * key + intercept;
+        final double raw = slope * key + intercept; // fma
         final long result = Math.round(raw);
         return Math.clamp(result, 0, upperBound);
     }
@@ -182,6 +179,7 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
         }
         return -(low + 1);
     }
+    
     private static int sumArithmeticProgression(final int n) {
         final int y = n - 1;
         return (y & 1) == 0 ? n * (y >> 1) : (n >> 1) * y;

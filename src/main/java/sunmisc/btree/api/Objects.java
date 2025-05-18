@@ -10,12 +10,16 @@ public interface Objects<T> extends Iterable<Location> {
 
     T fetch(Location index);
 
-    default void free(final long index) {
+    default void free(final Location index) {
         this.free(List.of(index));
     }
-    void free(Iterable<Long> indexes);
+    void free(Iterable<Location> indexes);
 
-    Optional<Location> last();
+    Optional<Location> lastIndex();
+
+    default Optional<T> lastObject() {
+        return this.lastIndex().map(this::fetch);
+    }
 
     void delete();
 }

@@ -2,10 +2,7 @@ package sunmisc.btree.objects;
 
 import sunmisc.btree.alloc.CowAlloc;
 import sunmisc.btree.alloc.LongLocation;
-import sunmisc.btree.api.Alloc;
-import sunmisc.btree.api.Location;
-import sunmisc.btree.api.Objects;
-import sunmisc.btree.api.Version;
+import sunmisc.btree.api.*;
 
 import java.io.*;
 import java.time.Instant;
@@ -44,13 +41,11 @@ public final class Versions implements Objects<Version> {
                     .toInstant()
                     .toEpochMilli());
             data.writeLong(node.offset());
-            return new LongLocation(
-                    this.alloc.allocOne(
-                            new DataInputStream(
-                                    new ByteArrayInputStream(bytes.toByteArray())
-                            )
-                    )
-            );
+            final Page page = alloc.alloc();
+            page.write(new DataInputStream(
+                    new ByteArrayInputStream(bytes.toByteArray())
+            ));
+            return page;
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -59,7 +54,8 @@ public final class Versions implements Objects<Version> {
     @Override
     public Version fetch(final Location index) {
         try {
-            final DataInputStream input = new DataInputStream(this.alloc.fetch(index.offset()));
+            final DataInputStream input = new DataInputStream(
+                    this.alloc.fetch(index).read());
             final long millis = input.readLong(); // time
             final long off = input.readLong();
             final Instant instant = Instant.ofEpochMilli(millis);
@@ -73,14 +69,15 @@ public final class Versions implements Objects<Version> {
     }
 
     @Override
-    public void free(final Iterable<Long> indexes) {
+    public void free(final Iterable<Location> indexes) {
         try {
-            final List<Long> nodes = new LinkedList<>();
-            for (final Long index : indexes) {
-                final DataInputStream input = new DataInputStream(this.alloc.fetch(index));
+            final List<Location> nodes = new LinkedList<>();
+            for (final Location index : indexes) {
+                final DataInputStream input = new DataInputStream(
+                        this.alloc.fetch(index).read());
                 input.readLong(); // time
                 final long off = input.readLong();
-                nodes.add(off);
+                nodes.add(new LongLocation(off));
             }
             table.nodes().free(nodes);
         } catch (final IOException e) {
@@ -98,7 +95,7 @@ public final class Versions implements Objects<Version> {
     }
 
     @Override
-    public Optional<Location> last() {
+    public Optional<Location> lastIndex() {
         try {
             return Optional.of(new LongLocation(alloc.last()));
         } catch (Exception e) {

@@ -4,10 +4,10 @@ import sunmisc.btree.api.*;
 import sunmisc.btree.objects.Table;
 import sunmisc.btree.utils.ConcurrentLazy;
 
+import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.function.Consumer;
+import java.util.SequencedMap;
 import java.util.function.Supplier;
 
 public final class LazyNode implements IndexedNode {
@@ -88,28 +88,23 @@ public final class LazyNode implements IndexedNode {
     }
 
     @Override
-    public IndexedNode tail() {
-        return this.lazy.get().tail();
+    public IndexedNode withoutFirst() {
+        return this.lazy.get().withoutFirst();
     }
 
     @Override
-    public void forEach(final Consumer<Entry> consumer) {
-        this.lazy.get().forEach(consumer);
-    }
-
-    @Override
-    public List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey) {
+    public SequencedMap<Long, String> rangeSearch(long minKey, long maxKey) {
         return lazy.get().rangeSearch(minKey, maxKey);
     }
 
     @Override
-    public int getMinChildren() {
-        return this.lazy.get().getMinChildren();
+    public int minChildren() {
+        return this.lazy.get().minChildren();
     }
 
     @Override
-    public int getMaxChildren() {
-        return this.lazy.get().getMaxChildren();
+    public int maxChildren() {
+        return this.lazy.get().maxChildren();
     }
 
     @Override
@@ -130,5 +125,10 @@ public final class LazyNode implements IndexedNode {
     @Override
     public boolean shouldSplit() {
         return this.lazy.get().shouldSplit();
+    }
+
+    @Override
+    public Iterator<Entry> iterator() {
+        return this.lazy.get().iterator();
     }
 }

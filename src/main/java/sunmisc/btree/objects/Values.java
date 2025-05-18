@@ -5,6 +5,7 @@ import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.Alloc;
 import sunmisc.btree.api.Location;
 import sunmisc.btree.api.Objects;
+import sunmisc.btree.api.Page;
 
 import java.io.*;
 import java.util.Iterator;
@@ -33,8 +34,9 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
              final DataOutputStream data = new DataOutputStream(out)) {
             data.writeLong(value.getKey());
             data.writeUTF(value.getValue());
-            final long off = this.alloc.allocOne(new ByteArrayInputStream(out.toByteArray()));
-            return () -> off;
+            final Page page = this.alloc.alloc();
+            page.write(new ByteArrayInputStream(out.toByteArray()));
+            return page;
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -42,8 +44,7 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
 
     @Override
     public Map.Entry<Long, String> fetch(final Location index) {
-        try (final ByteArrayInputStream in = new ByteArrayInputStream(
-                this.alloc.fetch(index.offset()).readAllBytes());
+        try (final InputStream in = this.alloc.fetch(index).read();
              final DataInputStream data = new DataInputStream(in)) {
             return Map.entry(data.readLong(), data.readUTF());
         } catch (final IOException e) {
@@ -52,7 +53,7 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     }
 
     @Override
-    public void free(final Iterable<Long> indexes) {
+    public void free(final Iterable<Location> indexes) {
         try {
             this.alloc.free(indexes);
         } catch (final IOException e) {
@@ -65,8 +66,9 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
 
     }
 
+
     @Override
-    public Optional<Location> last() {
+    public Optional<Location> lastIndex() {
         try {
             return Optional.of(new LongLocation(alloc.last()));
         } catch (IOException e) {

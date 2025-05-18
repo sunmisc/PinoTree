@@ -7,23 +7,25 @@ import sunmisc.btree.api.Split;
 import sunmisc.btree.objects.Table;
 
 import java.util.*;
-import java.util.function.Consumer;
+import java.util.stream.StreamSupport;
 
 public final class InternalNode extends AbstractNode {
     private final List<Long> keys;
 
-    public InternalNode(final Table table, final List<Long> keys, final List<IndexedNode> children) {
+    public InternalNode(final Table table,
+                        final List<Long> keys,
+                        final List<IndexedNode> children) {
         super(table, children);
         this.keys = keys;
     }
 
     @Override
-    public int getMinChildren() {
+    public int minChildren() {
         return Constants.INTERNAL_MIN_CHILDREN;
     }
 
     @Override
-    public int getMaxChildren() {
+    public int maxChildren() {
         return Constants.INTERNAL_MAX_CHILDREN;
     }
 
@@ -32,20 +34,22 @@ public final class InternalNode extends AbstractNode {
         return Collections.unmodifiableList(this.keys);
     }
 
+    @Override
+    public IndexedNode withoutFirst() {
+        return this.createNewNode(Utils.withoutFirst(this.keys()), Utils.withoutFirst(this.children()));
+    }
+
+    private IndexedNode withoutLast() {
+        return this.createNewNode(Utils.withoutLast(this.keys()), Utils.withoutLast(this.children()));
+    }
 
     @Override
-    public IndexedNode tail() {
-        return this.createNewNode(Utils.tail(this.keys()), Utils.tail(this.children()));
+    public Iterator<Entry> iterator() {
+        return children().stream()
+                .flatMap(child -> StreamSupport.stream(child.spliterator(), false))
+                .iterator();
     }
 
-    @Override
-    public void forEach(final Consumer<Entry> consumer) {
-        this.children().forEach(child -> child.forEach(consumer));
-    }
-
-    private IndexedNode head() {
-        return this.createNewNode(Utils.head(this.keys()), Utils.head(this.children()));
-    }
 
     private IndexedNode createNewNode(final List<Long> keys, final List<IndexedNode> children) {
         final Node node = new InternalNode(this.table, keys, children);
@@ -74,7 +78,7 @@ public final class InternalNode extends AbstractNode {
         // todo:
         final IndexedNode right = hasRightSibling ? this.children().get(childIdx + 1) : null;
         final IndexedNode left = hasLeftSibling ? this.children().get(childIdx - 1) : null;
-        final int minChildren = child.getMinChildren();
+        final int minChildren = child.minChildren();
 
         if (hasRightSibling && (!hasLeftSibling || right.size() >= left.size())) {
             if (right.size() <= minChildren) {
@@ -135,7 +139,7 @@ public final class InternalNode extends AbstractNode {
         newKeys.add(right.firstEntry().orElseThrow().key());
         final List<IndexedNode> newChildren = new ArrayList<>(this.children());
         newChildren.add(right.children().getFirst());
-        return List.of(this.createNewNode(newKeys, newChildren), right.tail());
+        return List.of(this.createNewNode(newKeys, newChildren), right.withoutFirst());
     }
 
     @Override
@@ -148,7 +152,7 @@ public final class InternalNode extends AbstractNode {
                 stolenValue,
                 right.children()
         );
-        return List.of(this.head(), this.createNewNode(newSiblingKeys, newSiblingChildren));
+        return List.of(this.withoutLast(), this.createNewNode(newSiblingKeys, newSiblingChildren));
     }
 
     public List<IndexedNode> withReplacedChildren(final int idx, final List<IndexedNode> newChildren) {
@@ -223,8 +227,8 @@ public final class InternalNode extends AbstractNode {
     }
 
     @Override
-    public List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey) {
-        List<Map.Entry<Long, String>> result = new ArrayList<>();
+    public SequencedMap<Long, String> rangeSearch(long minKey, long maxKey) {
+        SequencedMap<Long, String> result = new LinkedHashMap<>();
         int startIdx = Collections.binarySearch(keys, minKey);
         startIdx = startIdx >= 0 ? startIdx : -startIdx - 1;
         for (int i = startIdx; i < children().size(); i++) {
@@ -232,9 +236,8 @@ public final class InternalNode extends AbstractNode {
             if (i < keys.size() && keys.get(i) > maxKey) {
                 break;
             }
-            result.addAll(child.rangeSearch(minKey, maxKey));
+            result.putAll(child.rangeSearch(minKey, maxKey));
         }
-
         return result;
     }
 }

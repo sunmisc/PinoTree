@@ -1,8 +1,8 @@
 package sunmisc.btree.api;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.SequencedMap;
 
 public interface Tree<K,V> extends Iterable<Map.Entry<K, V>> {
 
@@ -16,7 +16,8 @@ public interface Tree<K,V> extends Iterable<Map.Entry<K, V>> {
 
     Optional<Map.Entry<K, V>> last();
 
+    @Deprecated
     Node root();
 
-    List<Map.Entry<Long, String>> rangeSearch(long minKey, long maxKey);
+    SequencedMap<Long, String> rangeSearch(K from, K to);
 }
