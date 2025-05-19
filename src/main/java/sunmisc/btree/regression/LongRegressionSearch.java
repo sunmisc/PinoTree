@@ -1,8 +1,6 @@
 package sunmisc.btree.regression;
 
-import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 
 public final class LongRegressionSearch implements RegressionSearch<Long> {
     private final long sumX; // Now sums value (Long)
@@ -84,7 +82,7 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
     public RegressionSearch<Long> add(final int index, final Long value) {
         if (count == 0) {
             return new LongRegressionSearch(value, index,
-                    value, index,index + value,
+                    0, 0, 0,
                     1, 0, 0, 1);
         }
         final int fact1 = count + 1;

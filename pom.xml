@@ -32,7 +32,7 @@
     <properties>
         <junit.version>5.11.4</junit.version>
         <jmh.version>1.37</jmh.version>
-        <javafx.version>21</javafx.version>
+        <javafx.version>22</javafx.version>
         <jackson.version>2.17.2</jackson.version>
     </properties>
 
@@ -141,6 +141,7 @@
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>
             <version>${jmh.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openjdk.jmh</groupId>

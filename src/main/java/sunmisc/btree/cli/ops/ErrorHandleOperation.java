@@ -16,8 +16,8 @@ public final class ErrorHandleOperation implements Operation {
     public void apply(List<String> args) {
         try {
             this.origin.apply(args);
-        } catch (Exception e) {
-            this.stream.println(e.getMessage());
+        } catch (final Throwable ex) {
+            this.stream.printf("error %s%n", ex.getMessage());
         }
     }
 

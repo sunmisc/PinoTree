@@ -8,4 +8,5 @@ module simple.btree.db {
     opens sunmisc.btree.ui to javafx.fxml;
     exports sunmisc.btree.ui;
     exports sunmisc.btree.impl;
+    exports sunmisc.btree.objects;
 }

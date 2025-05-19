@@ -11,8 +11,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class MutTreeTest {
-    private static final int MAX_SIZE = 1_000;
-
+    private static final int MAX_SIZE = 10_000;
 
     @Test
     public void testAddAndPoll() {

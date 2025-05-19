@@ -3,8 +3,9 @@ package sunmisc.btree.cli.ops;
 import sunmisc.btree.api.Tree;
 
 import java.util.List;
+import java.util.concurrent.ConcurrentMap;
 
-public class DeleteOperation implements Operation {
+public final class DeleteOperation implements Operation {
     private final Tree<Long, String> tree;
 
     public DeleteOperation(Tree<Long, String> tree) {

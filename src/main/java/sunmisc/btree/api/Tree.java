@@ -12,12 +12,16 @@ public interface Tree<K,V> extends Iterable<Map.Entry<K, V>> {
 
     void delete(K key);
 
+    void delete(K key, V value);
+
     Optional<Map.Entry<K, V>> first();
 
     Optional<Map.Entry<K, V>> last();
 
+    SequencedMap<Long, String> rangeSearch(K from, K to);
+
+    int size();
+
     @Deprecated
     Node root();
-
-    SequencedMap<Long, String> rangeSearch(K from, K to);
 }

@@ -1,7 +1,7 @@
 package sunmisc.btree.impl;
 
 import sunmisc.btree.api.*;
-import sunmisc.btree.objects.Table;
+import sunmisc.btree.objects.IOTable;
 import sunmisc.btree.utils.ConcurrentLazy;
 
 import java.util.Iterator;
@@ -55,6 +55,11 @@ public final class LazyNode implements IndexedNode {
     @Override
     public IndexedNode delete(final long key) {
         return this.lazy.get().delete(key);
+    }
+
+    @Override
+    public IndexedNode delete(long key, String value) {
+        return this.lazy.get().delete(key, value);
     }
 
     @Override

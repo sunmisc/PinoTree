@@ -4,6 +4,8 @@ import sunmisc.btree.api.Tree;
 
 import java.io.PrintStream;
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 public final class ListOperation implements Operation {
     private final Tree<Long, String> tree;
@@ -16,9 +18,10 @@ public final class ListOperation implements Operation {
 
     @Override
     public void apply(List<String> args) {
-        tree.forEach(entry -> {
-            stream.printf("%s -> %s%n", entry.getKey(), entry.getValue());
-        });
+        stream.printf(StreamSupport.stream(tree.spliterator(), false)
+                .map(Object::toString)
+                .collect(Collectors.joining(", ", "[", "]\n"))
+        );
     }
 
     @Override

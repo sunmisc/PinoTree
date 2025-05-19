@@ -1,10 +1,6 @@
 package sunmisc.btree.impl;
 
-import sunmisc.btree.api.Entry;
-import sunmisc.btree.api.IndexedNode;
-import sunmisc.btree.api.Node;
-import sunmisc.btree.api.Split;
-import sunmisc.btree.objects.Table;
+import sunmisc.btree.api.*;
 
 import java.util.*;
 import java.util.stream.StreamSupport;
@@ -109,11 +105,18 @@ public final class InternalNode extends AbstractNode {
     public IndexedNode delete(final long key) {
         final int rawIndex = Collections.binarySearch(this.keys(), key);
         final int index = rawIndex >= 0 ? rawIndex + 1 : -rawIndex - 1;
-
-        final IndexedNode origChild = this.children().get(index);
-        final IndexedNode child = origChild.delete(key);
-        return this.rebalanceNode(index, child);
+        final IndexedNode child = this.children().get(index);
+        return this.rebalanceNode(index, child.delete(key));
     }
+
+    @Override
+    public IndexedNode delete(long key, String value) {
+        final int rawIndex = Collections.binarySearch(this.keys(), key);
+        final int index = rawIndex >= 0 ? rawIndex + 1 : -rawIndex - 1;
+        final IndexedNode child = this.children().get(index);
+        return this.rebalanceNode(index, child.delete(key, value));
+    }
+
     private IndexedNode withMergedChildren(final int leftChildIdx,
                                           final IndexedNode leftNode,
                                           final IndexedNode rightNode) {
@@ -232,11 +235,11 @@ public final class InternalNode extends AbstractNode {
         int startIdx = Collections.binarySearch(keys, minKey);
         startIdx = startIdx >= 0 ? startIdx : -startIdx - 1;
         for (int i = startIdx; i < children().size(); i++) {
-            IndexedNode child = children().get(i);
-            if (i < keys.size() && keys.get(i) > maxKey) {
+            if (i == 0 || keys.get(i - 1) <= maxKey) {
+                result.putAll(children().get(i).rangeSearch(minKey, maxKey));
+            } else {
                 break;
             }
-            result.putAll(child.rangeSearch(minKey, maxKey));
         }
         return result;
     }

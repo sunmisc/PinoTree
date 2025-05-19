@@ -2,22 +2,22 @@ package sunmisc.btree.impl;
 
 import sunmisc.btree.api.*;
 import sunmisc.btree.api.Objects;
-import sunmisc.btree.objects.Table;
+import sunmisc.btree.objects.HeapTable;
+import sunmisc.btree.objects.IOTable;
 import sunmisc.btree.objects.TimeVersion;
 
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class MutBtree implements Tree<Long, String> {
-    private static final AtomicInteger ID = new AtomicInteger();
     private final Lock lock = new ReentrantLock();
     private final Table table;
 
     public MutBtree() {
-        this(new Table(String.format("test-%s", ID.getAndIncrement())));
+        this(new HeapTable());
     }
 
     public MutBtree(final Table table) {
@@ -29,6 +29,7 @@ public final class MutBtree implements Tree<Long, String> {
                 .lastObject()
                 .map(e -> this.table.nodes().fetch(e));
     }
+
     @Override 
     public void put(final Long key, final String value) {
         lock.lock();
@@ -81,6 +82,26 @@ public final class MutBtree implements Tree<Long, String> {
     }
 
     @Override
+    public void delete(Long key, String value) {
+        lock.lock();
+        try {
+            Objects<Version> versions = table.roots();
+            versions.lastObject()
+                    .map(e -> this.table.nodes().fetch(e))
+                    .ifPresent(prev -> {
+                        IndexedNode deleted = prev.delete(key, value);
+                        if (deleted.size() == 1 && !deleted.isLeaf()) {
+                            deleted = deleted.children().getFirst();
+                        }
+                        final Version version = new TimeVersion(deleted.offset());
+                        versions.put(version);
+                    });
+        } finally {
+            lock.unlock();
+        }
+    }
+
+    @Override
     public Optional<Map.Entry<Long, String>> first() {
         return fetchRoot()
                 .flatMap(Node::firstEntry)
@@ -105,6 +126,20 @@ public final class MutBtree implements Tree<Long, String> {
     }
 
     @Override
+    public int size() {
+        return fetchRoot()
+                .map(this::count)
+                .orElse(0);
+    }
+    private int count(Node node) {
+        if (node.isLeaf()) {
+            return node.size();
+        }
+        return node.children().stream().reduce(0,
+                (a, b) -> a + count(b), Integer::sum);
+    }
+
+    @Override
     public Iterator<Map.Entry<Long, String>> iterator() {
         return fetchRoot()
                 .map(prev -> StreamSupport.stream(prev.spliterator(), false)
@@ -125,7 +160,7 @@ public final class MutBtree implements Tree<Long, String> {
         return fetchRoot().orElseThrow();
     }
     public static void main(String[] args) {
-        MutBtree tree = new MutBtree(new Table("kek1"));
+        MutBtree tree = new MutBtree();
 
         tree.put(1L, "one");
         tree.put(2L, "two");
@@ -136,5 +171,6 @@ public final class MutBtree implements Tree<Long, String> {
         System.out.println("3 "+tree.first());
         SequencedMap<Long, String> range = tree.rangeSearch(2L, 4L);
         System.out.println(range);
+        System.out.println(tree.size());
     }
 }

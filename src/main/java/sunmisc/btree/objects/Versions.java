@@ -15,7 +15,7 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 public final class Versions implements Objects<Version> {
-    private static final int PAGE_SIZE = 16;
+    private static final int PAGE_SIZE = Long.BYTES * 2;
     private final Alloc alloc;
     private final Table table;
 

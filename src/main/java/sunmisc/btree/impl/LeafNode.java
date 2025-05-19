@@ -2,11 +2,11 @@ package sunmisc.btree.impl;
 
 import sunmisc.btree.api.*;
 import sunmisc.btree.objects.OEntry;
-import sunmisc.btree.objects.Table;
 import sunmisc.btree.regression.LongRegressionSearch;
 import sunmisc.btree.regression.RegressionSearch;
 
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 
 import static sunmisc.btree.impl.Constants.LEAF_MAX_CHILDREN;
 import static sunmisc.btree.impl.Constants.LEAF_MIN_CHILDREN;
@@ -72,6 +72,25 @@ public final class LeafNode extends AbstractNode {
         return this.createNewNode(
                 Utils.withoutIdx(idx, this.addresses),
                 longRegressionSearch.remove(idx, val)
+        );
+    }
+
+    @Override
+    public IndexedNode delete(long key, String value) {
+        final int idx = this.longRegressionSearch.search(this.keys(), key);
+        if (idx < 0) {
+            throw new NoSuchElementException("No entry found for key: " + key);
+        }
+        final Entry entry = addresses.get(idx);
+        final long val = entry.key();
+        if (entry.value().value().equals(value)) {
+            return this.createNewNode(
+                    Utils.withoutIdx(idx, this.addresses),
+                    longRegressionSearch.remove(idx, val)
+            );
+        }
+        throw new IllegalArgumentException(
+                "Value mismatch for key " + key + ": expected '" + value + "', found '" + entry.value().value() + "'"
         );
     }
 
@@ -185,6 +204,7 @@ public final class LeafNode extends AbstractNode {
     @Override
     public SequencedMap<Long, String> rangeSearch(long minKey, long maxKey) {
         SequencedMap<Long, String> result = new LinkedHashMap<>();
+        System.out.println(keys());
         for (Entry entry : addresses) {
             long key = entry.key();
             if (key >= minKey && key <= maxKey) {

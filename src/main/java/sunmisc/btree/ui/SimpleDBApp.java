@@ -6,7 +6,7 @@ import javafx.scene.Scene;
 import javafx.stage.Stage;
 import sunmisc.btree.api.Tree;
 import sunmisc.btree.impl.MutBtree;
-import sunmisc.btree.objects.Table;
+import sunmisc.btree.objects.IOTable;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -31,7 +31,7 @@ public class SimpleDBApp extends Application {
 
     public static void switchTree(String tableName) {
         currentTree = trees.computeIfAbsent(tableName, name -> {
-            Table table = new Table(name);
+            IOTable table = new IOTable(name);
             return new MutBtree(table);
         });
     }
