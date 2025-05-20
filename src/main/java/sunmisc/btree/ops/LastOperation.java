@@ -1,15 +1,15 @@
-package sunmisc.btree.cli.ops;
+package sunmisc.btree.ops;
 
 import sunmisc.btree.api.Tree;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.List;
 
 public final class LastOperation implements Operation {
     private final Tree<Long, String> tree;
-    private final PrintStream stream;
+    private final PrintWriter stream;
 
-    public LastOperation(Tree<Long, String> tree, PrintStream stream) {
+    public LastOperation(Tree<Long, String> tree, PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
@@ -18,7 +18,7 @@ public final class LastOperation implements Operation {
     public void apply(List<String> args) {
         stream.println(tree.last()
                 .map(e -> String.format(
-                        "last: %d -> %s",
+                        "%d = %s",
                         e.getKey(),
                         e.getValue())
                 ).orElse("tree is empty"));

@@ -1,13 +1,13 @@
-package sunmisc.btree.cli.ops;
+package sunmisc.btree.ops;
 
 import sunmisc.btree.api.Tree;
 
 import java.util.List;
 
-public final class PutOperation implements Operation {
+public final class DeleteIfMappedOperation implements Operation {
     private final Tree<Long, String> tree;
 
-    public PutOperation(Tree<Long, String> tree) {
+    public DeleteIfMappedOperation(Tree<Long, String> tree) {
         this.tree = tree;
     }
 
@@ -20,11 +20,11 @@ public final class PutOperation implements Operation {
         for (int i = 0; i < n; i += 2) {
             long key = Long.parseLong(args.get(i));
             String value = args.get(i + 1);
-            tree.put(key, value);
+            tree.delete(key, value);
         }
     }
     @Override
     public String name() {
-        return "put";
+        return "deleteIfMapped";
     }
 }

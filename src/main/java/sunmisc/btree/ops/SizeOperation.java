@@ -1,22 +1,22 @@
-package sunmisc.btree.cli.ops;
+package sunmisc.btree.ops;
 
 import sunmisc.btree.api.Tree;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.List;
 
 public final class SizeOperation implements Operation {
     private final Tree<Long, String> tree;
-    private final PrintStream stream;
+    private final PrintWriter stream;
 
-    public SizeOperation(Tree<Long, String> tree, PrintStream stream) {
+    public SizeOperation(Tree<Long, String> tree, PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
 
     @Override
     public void apply(List<String> args) {
-        stream.printf("table size: %s%n", tree.size());
+        stream.println(tree.size());
     }
 
     @Override

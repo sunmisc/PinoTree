@@ -1,4 +1,4 @@
-package sunmisc.btree.cli.ops;
+package sunmisc.btree.ops;
 
 import java.util.List;
 

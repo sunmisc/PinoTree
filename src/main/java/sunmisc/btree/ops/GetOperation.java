@@ -1,16 +1,16 @@
-package sunmisc.btree.cli.ops;
+package sunmisc.btree.ops;
 
 import sunmisc.btree.api.Tree;
 
-import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.List;
 import java.util.StringJoiner;
 
 public final class GetOperation implements Operation {
     private final Tree<Long, String> tree;
-    private final PrintStream stream;
+    private final PrintWriter stream;
 
-    public GetOperation(Tree<Long, String> tree, PrintStream stream) {
+    public GetOperation(Tree<Long, String> tree, PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
@@ -23,7 +23,7 @@ public final class GetOperation implements Operation {
             tree.get(key).ifPresentOrElse(val -> {
                 joiner.add(String.format("%s = %s", key, val));
             }, () -> {
-                joiner.add(String.format("%s empty", key));
+                joiner.add(String.format("%s = empty", key));
             });
         }
         this.stream.println(joiner);
