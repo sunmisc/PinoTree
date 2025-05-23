@@ -30,6 +30,7 @@ public class LinearSearchTest {
                 keys.stream().map(e -> Collections.binarySearch(keys, e)).toList()
         );
     }
+
     @ParameterizedTest
     @ValueSource(ints = {16, 64, 128})
     public void testRandAcc(final int size) {
@@ -51,6 +52,5 @@ public class LinearSearchTest {
                         .boxed()
                         .toList()
         );
-           }
-
+    }
 }

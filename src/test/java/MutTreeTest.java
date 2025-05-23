@@ -87,7 +87,6 @@ public class MutTreeTest {
         }
         for (long i = 0; i < maxValue; i += step) {
             final long keyToAdd = i + step;
-
             map.remove(i);
             try {
                 btree.delete(i);
