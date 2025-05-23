@@ -10,44 +10,47 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.stream.LongStream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertIterableEquals;
 
 public class LinearSearchTest {
+    private static final int MAX_SIZE = 100_000;
+
     @ParameterizedTest
     @ValueSource(ints = {16, 64, 128})
     public void test(final int size) {
         final List<Long> keys = ThreadLocalRandom.current()
-                .longs(size, 0, 100_000)
+                .longs(size, 0, MAX_SIZE)
                 .distinct()
                 .sorted()
                 .boxed()
                 .toList();
         final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
-        for (final long k : keys) {
-            final int expected = model.search(keys, k);
-            final int actual = Collections.binarySearch(keys, k);
-            assertEquals(expected, actual, "Key " + k +
-                    " expected " + expected + " actual " + actual);
-        }
+        assertIterableEquals(
+                keys.stream().map(e -> model.search(keys, e)).toList(),
+                keys.stream().map(e -> Collections.binarySearch(keys, e)).toList()
+        );
     }
     @ParameterizedTest
     @ValueSource(ints = {16, 64, 128})
     public void testRandAcc(final int size) {
-        final long seed = ThreadLocalRandom.current().nextLong();
-        final List<Long> keys = LongStream.range(0, 100_000)
-                .map(e -> e +
-                        new Random(seed).nextInt(0, size))
+        final Random random = ThreadLocalRandom.current();
+        final List<Long> keys = LongStream.range(0, MAX_SIZE)
+                .map(e -> e + random.nextInt(0, size))
                 .distinct()
                 .sorted()
                 .boxed()
                 .toList();
         final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
-        for (int i = 0; i < keys.size(); i++) {
-            final long k = ThreadLocalRandom.current().nextLong(0, 100_000);
-            final int expected = model.search(keys, k);
-            final int actual = Collections.binarySearch(keys, k);
-            assertEquals(expected, actual, "Key " + k +
-                    " expected " + expected + " actual " + actual);
-        }
-    }
+        assertIterableEquals(
+                random.longs(0, MAX_SIZE, MAX_SIZE)
+                        .map(e -> model.search(keys, e))
+                        .boxed()
+                        .toList(),
+                random.longs(0, MAX_SIZE, MAX_SIZE)
+                        .map(e -> Collections.binarySearch(keys, e))
+                        .boxed()
+                        .toList()
+        );
+           }
 
 }
