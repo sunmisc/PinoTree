@@ -42,7 +42,7 @@ public final class MutBtree implements Tree<Long, String> {
                         List.of(split.medianKey()),
                         List.of(split.src(), split.right())
                 );
-                newRoot = new LazyNode(() -> node, this.table.nodes().put(node));
+                newRoot = new FwdNode(node, this.table.nodes().put(node));
             } else {
                 newRoot = split.src();
             }

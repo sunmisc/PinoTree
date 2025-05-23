@@ -1,7 +1,6 @@
 package sunmisc.btree.impl;
 
 import sunmisc.btree.api.*;
-import sunmisc.btree.objects.IOTable;
 import sunmisc.btree.utils.ConcurrentLazy;
 
 import java.util.Iterator;
@@ -10,19 +9,23 @@ import java.util.Optional;
 import java.util.SequencedMap;
 import java.util.function.Supplier;
 
-public final class LazyNode implements IndexedNode {
+public final class FwdNode implements IndexedNode {
     private final ConcurrentLazy<Node> lazy;
     private final Location offset;
 
-    public LazyNode(final Table table, final Location offset) {
+    public FwdNode(final Table table, final Location offset) {
         this(new ConcurrentLazy<>(() -> table.nodes().fetch(offset)), offset);
     }
 
-    public LazyNode(final Supplier<Node> supplier, final Location offset) {
+    public FwdNode(final Node node, final Location offset) {
+        this(() -> node, offset);
+    }
+
+    public FwdNode(final Supplier<Node> supplier, final Location offset) {
         this(new ConcurrentLazy<>(supplier), offset);
     }
 
-    public LazyNode(final ConcurrentLazy<Node> lazy, final Location offset) {
+    public FwdNode(final ConcurrentLazy<Node> lazy, final Location offset) {
         this.lazy = lazy;
         this.offset = offset;
     }

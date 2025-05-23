@@ -50,12 +50,12 @@ public final class LeafNode extends AbstractNode {
 
     private IndexedNode createNewNode(final List<Entry> keys, final RegressionSearch<Long> regression) {
         final Node leaf = new LeafNode(this.table, keys, regression);
-        return new LazyNode(() -> leaf, this.table.nodes().put(leaf));
+        return new FwdNode(leaf, this.table.nodes().put(leaf));
     }
 
     private IndexedNode createNewNode(final List<Entry> keys) {
         final Node leaf = new LeafNode(this.table, keys);
-        return new LazyNode(() -> leaf, this.table.nodes().put(leaf));
+        return new FwdNode(leaf, this.table.nodes().put(leaf));
     }
 
     @Override
@@ -133,10 +133,7 @@ public final class LeafNode extends AbstractNode {
         return newLeaf.shouldSplit()
                 ? newLeaf.split()
                 : new Split.UnarySplit(
-                        new LazyNode(
-                                () -> newLeaf,
-                                this.table.nodes().put(newLeaf)
-                        )
+                        new FwdNode(newLeaf, this.table.nodes().put(newLeaf))
         );
     }
 

@@ -5,7 +5,7 @@ import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
 import sunmisc.btree.api.Objects;
 import sunmisc.btree.impl.InternalNode;
-import sunmisc.btree.impl.LazyNode;
+import sunmisc.btree.impl.FwdNode;
 import sunmisc.btree.impl.LeafNode;
 
 import java.io.*;
@@ -81,7 +81,7 @@ public final class Nodes implements Objects<Node> {
                 final List<IndexedNode> children = new ArrayList<>();
                 for (int i = 0; i < childSize; i++) {
                     final Location off = new LongLocation(input.readLong());
-                    children.add(new LazyNode(
+                    children.add(new FwdNode(
                             () -> this.table.nodes().fetch(off),
                             off)
                     );
@@ -105,7 +105,7 @@ public final class Nodes implements Objects<Node> {
             final List<Location> child = new LinkedList<>();
             final List<Location> values = new LinkedList<>();
             for (final Location index : indexes) {
-                final IndexedNode node = new LazyNode(this.table, index);
+                final IndexedNode node = new FwdNode(this.table, index);
                 this.recursiveFree(node, child, values);
             }
             this.alloc.free(child);
