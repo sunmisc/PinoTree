@@ -8,7 +8,7 @@ Command-Line Interface: Provides a simple TCP-based interface for interacting wi
 Persistent Storage: Stores data on disk, ensuring durability across server restarts.
 Java-Based: Built with Java for cross-platform compatibility and ease of integration.
 
-`Commands
+``Commands
 PinoTree supports the following commands for interacting with the key-value store via a TCP client:
 Commands:
 put [table] [key] [value] ... <key_n> <value_n>
@@ -19,7 +19,7 @@ first/last [table]
 list [table] <offset> <count>
 range [table] [from] [to]
 size [table]
-`
+``
 
 - put: Inserts or updates one or more key-value pairs in the specified table.
 - get: Retrieves values for one or more keys from the table.
