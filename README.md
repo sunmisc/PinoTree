@@ -1,4 +1,4 @@
-# PinoTree 
+# PinoTree
 Immutable B-Tree Key-Value Store
 PinoTree is a high-performance, immutable B-tree key-value store implemented in Java. It leverages an immutable B-tree structure for data persistence and uses linear regression to optimize key distribution for efficient range queries. Designed for reliability and scalability, PinoTree is ideal for applications requiring fast, versioned key-value storage with robust range query capabilities.
 Features
