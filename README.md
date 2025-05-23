@@ -1,4 +1,5 @@
-PinoTree: Immutable B-Tree Key-Value Store
+# PinoTree 
+Immutable B-Tree Key-Value Store
 PinoTree is a high-performance, immutable B-tree key-value store implemented in Java. It leverages an immutable B-tree structure for data persistence and uses linear regression to optimize key distribution for efficient range queries. Designed for reliability and scalability, PinoTree is ideal for applications requiring fast, versioned key-value storage with robust range query capabilities.
 Features
 
@@ -8,7 +9,7 @@ Command-Line Interface: Provides a simple TCP-based interface for interacting wi
 Persistent Storage: Stores data on disk, ensuring durability across server restarts.
 Java-Based: Built with Java for cross-platform compatibility and ease of integration.
 
-Commands
+# Commands
 PinoTree supports the following commands for interacting with the key-value store via a TCP client:
 Commands:
 ```
@@ -31,24 +32,19 @@ size [table]
 - range: Retrieves key-value pairs within a specified key range.
 - size: Returns the number of key-value pairs in the table.
 
-Prerequisites:
-
+# Prerequisites:
 - Java 21 or later
 - Maven 3.6 or later
 
-
-Build the Project:
+# Build the Project:
 ``mvn clean package``
 
-
-Run the Server:
+# Run the Server:
 ``java -jar target/pinotree-1.0-SNAPSHOT.jar <port>``
 
 Replace <port> with your desired port number (e.g., 8080).
 
-
-Usage
-
+# Usage
 Start the PinoTree server:
 ``java -jar target/pinotree-1.0-SNAPSHOT.jar 8080``
 
@@ -67,7 +63,7 @@ range mytable key1 key3
 size mytable
 ``
 
-Technical Details
+# Technical Details
 
 - Immutable B-Tree: PinoTree uses an immutable B-tree to ensure that updates (put, delete, etc.) create new tree versions, preserving previous states. This is ideal for applications requiring audit trails or rollback capabilities.
 - Linear Regression: By applying linear regression to key distributions, PinoTree optimizes range queries (range, list) by predicting key locations, reducing the number of nodes traversed.
@@ -75,7 +71,3 @@ Technical Details
 - Codebase: The project contains approximately 2,500 lines of Java code, with ~1,800 lines of executable code (excluding comments and blank lines).
 
 Please include tests and follow the project’s coding style (standard Java conventions).
-License
-GNU General Public License v3.0
-Contact
-For questions or suggestions, open an issue on GitHub or contact the maintainer at sunmisc.
