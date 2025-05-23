@@ -7,6 +7,7 @@ import sunmisc.btree.api.Objects;
 import sunmisc.btree.impl.InternalNode;
 import sunmisc.btree.impl.FwdNode;
 import sunmisc.btree.impl.LeafNode;
+import sunmisc.btree.utils.ConcurrentLazy;
 
 import java.io.*;
 import java.util.*;
@@ -82,7 +83,7 @@ public final class Nodes implements Objects<Node> {
                 for (int i = 0; i < childSize; i++) {
                     final Location off = new LongLocation(input.readLong());
                     children.add(new FwdNode(
-                            () -> this.table.nodes().fetch(off),
+                            new ConcurrentLazy<>(() -> this.table.nodes().fetch(off)),
                             off)
                     );
                 }

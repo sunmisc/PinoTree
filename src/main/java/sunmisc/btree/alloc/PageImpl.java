@@ -1,12 +1,12 @@
 package sunmisc.btree.alloc;
 
-import com.fasterxml.jackson.databind.util.ByteBufferBackedInputStream;
 import sunmisc.btree.api.Page;
 
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
 public final class PageImpl implements Page {
@@ -52,5 +52,33 @@ public final class PageImpl implements Page {
     @Override
     public long offset() {
         return this.offset;
+    }
+
+    private static final class ByteBufferBackedInputStream extends InputStream {
+        private final ByteBuffer buffer;
+
+        public ByteBufferBackedInputStream(final ByteBuffer buf) {
+            this.buffer = buf;
+        }
+
+        @Override
+        public int available() {
+            return this.buffer.remaining();
+        }
+
+        @Override
+        public int read() {
+            return this.buffer.hasRemaining() ? (this.buffer.get() & 0xFF) : -1;
+        }
+
+        @Override
+        public int read(final byte[] bytes, final int off, int len) {
+            if (!this.buffer.hasRemaining()) {
+                return -1;
+            }
+            len = Math.min(len, this.buffer.remaining());
+            this.buffer.get(bytes, off, len);
+            return len;
+        }
     }
 }

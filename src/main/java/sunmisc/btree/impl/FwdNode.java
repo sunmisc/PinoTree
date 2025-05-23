@@ -10,7 +10,7 @@ import java.util.SequencedMap;
 import java.util.function.Supplier;
 
 public final class FwdNode implements IndexedNode {
-    private final ConcurrentLazy<Node> lazy;
+    private final Supplier<Node> lazy;
     private final Location offset;
 
     public FwdNode(final Table table, final Location offset) {
@@ -21,11 +21,7 @@ public final class FwdNode implements IndexedNode {
         this(() -> node, offset);
     }
 
-    public FwdNode(final Supplier<Node> supplier, final Location offset) {
-        this(new ConcurrentLazy<>(supplier), offset);
-    }
-
-    public FwdNode(final ConcurrentLazy<Node> lazy, final Location offset) {
+    public FwdNode(final Supplier<Node> lazy, final Location offset) {
         this.lazy = lazy;
         this.offset = offset;
     }
