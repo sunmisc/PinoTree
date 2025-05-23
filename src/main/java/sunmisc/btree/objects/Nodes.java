@@ -1,6 +1,6 @@
 package sunmisc.btree.objects;
 
-import sunmisc.btree.alloc.CowAlloc;
+import sunmisc.btree.alloc.Malloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
 import sunmisc.btree.api.Objects;
@@ -18,7 +18,7 @@ public final class Nodes implements Objects<Node> {
     private final Table table;
 
     public Nodes(final File parent, final Table table) {
-        this(new CowAlloc(
+        this(new Malloc(
                 new File(parent, "nodes"), PAGE_SIZE),
                 table
         );

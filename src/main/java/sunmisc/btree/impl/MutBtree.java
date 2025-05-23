@@ -3,13 +3,10 @@ package sunmisc.btree.impl;
 import sunmisc.btree.api.*;
 import sunmisc.btree.api.Objects;
 import sunmisc.btree.objects.HeapTable;
-import sunmisc.btree.objects.IOTable;
 import sunmisc.btree.objects.TimeVersion;
-
 import java.util.*;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 public final class MutBtree implements Tree<Long, String> {

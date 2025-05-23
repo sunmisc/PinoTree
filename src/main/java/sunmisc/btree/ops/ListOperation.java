@@ -24,7 +24,7 @@ public final class ListOperation implements Operation {
                 .skip(offset)
                 .limit(count)
                 .map(e -> String.format(
-                        "%d = %s",
+                        "%s = %s",
                         e.getKey(), e.getValue())
                 )
                 .collect(Collectors.joining("\n"))

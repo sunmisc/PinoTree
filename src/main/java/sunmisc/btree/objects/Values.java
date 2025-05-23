@@ -1,6 +1,6 @@
 package sunmisc.btree.objects;
 
-import sunmisc.btree.alloc.CowAlloc;
+import sunmisc.btree.alloc.Malloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.Alloc;
 import sunmisc.btree.api.Location;
@@ -18,7 +18,7 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     private final Alloc alloc;
 
     public Values(final File parent) {
-        this(new CowAlloc(
+        this(new Malloc(
                 new File(parent, "values"),
                 PAGE_SIZE)
         );

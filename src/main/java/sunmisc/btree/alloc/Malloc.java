@@ -13,7 +13,7 @@ import java.util.Map;
 import java.util.OptionalLong;
 import java.util.stream.LongStream;
 
-public final class CowAlloc implements Alloc {
+public final class Malloc implements Alloc {
     private static final long HEADER_SIZE = Long.BYTES * 2;
     private static final long LAST = 0;
     private static final long CTL  = 8;
@@ -23,7 +23,7 @@ public final class CowAlloc implements Alloc {
     private final LifoQueue removals;
     private final Map<Long, Long> header = new HashMap<>();
 
-    public CowAlloc(final File file, final int pageSize) {
+    public Malloc(final File file, final int pageSize) {
         this.file = file;
         this.removals = new LifoQueue(new File(
                 file.getParentFile(),
@@ -93,7 +93,7 @@ public final class CowAlloc implements Alloc {
         }
     }
 
-       private long tail() {
+    private long tail() {
         return header.computeIfAbsent(CTL, off -> {
             try (final RandomAccessFile raf = new RandomAccessFile(file, "r")) {
                 raf.seek(off);

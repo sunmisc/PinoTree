@@ -34,7 +34,7 @@ public final class CachedObjects<T> implements Objects<T> {
 
     @Override
     public T fetch(final Location index) {
-        return this.cache.get(index.offset(), aLong -> origin.fetch(index));
+        return this.cache.get(index.offset(), _ -> origin.fetch(index));
     }
 
     @Override

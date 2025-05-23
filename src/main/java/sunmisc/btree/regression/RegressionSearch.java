@@ -10,6 +10,9 @@ public interface RegressionSearch<V extends Number> {
 
     int search(List<V> values, V index);
 
+    @Deprecated(forRemoval = true)
+    double mse();
+
     default RegressionSearch<V> addAll(List<V> values) {
         RegressionSearch<V> result = this;
         for (int i = 0; i < values.size(); i++) {

@@ -1,6 +1,6 @@
 package sunmisc.btree.objects;
 
-import sunmisc.btree.alloc.CowAlloc;
+import sunmisc.btree.alloc.Malloc;
 import sunmisc.btree.alloc.LongLocation;
 import sunmisc.btree.api.*;
 
@@ -25,7 +25,7 @@ public final class Versions implements Objects<Version> {
     }
 
     public Versions(final File parent, final Table table) {
-        this(new CowAlloc(
+        this(new Malloc(
                 new File(parent, "versions"), PAGE_SIZE),
                 table
         );

@@ -155,6 +155,12 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
                 : binarySearch(values, key, 0, Math.max(0, guess - 1));
     }
 
+    @Override
+    public double mse() {
+        final double errorSquare = Math.max(0, sumYY - sumXY * sumXY / sumXX);
+        return errorSquare / (count - 2);
+    }
+
     private int predict(final long key, final int upperBound) {
         final double raw = slope * key + intercept; // fma
         final long result = Math.round(raw);
