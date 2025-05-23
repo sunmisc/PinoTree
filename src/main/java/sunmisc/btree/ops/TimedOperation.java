@@ -5,12 +5,12 @@ import java.util.List;
 public final class TimedOperation implements Operation {
     private final Operation origin;
 
-    public TimedOperation(Operation origin) {
+    public TimedOperation(final Operation origin) {
         this.origin = origin;
     }
 
     @Override
-    public void apply(List<String> args) {
+    public void apply(final List<String> args) {
         final long start = System.currentTimeMillis();
         this.origin.apply(args);
         final long end = System.currentTimeMillis();
@@ -19,6 +19,6 @@ public final class TimedOperation implements Operation {
 
     @Override
     public String name() {
-        return origin.name();
+        return this.origin.name();
     }
 }

@@ -9,14 +9,14 @@ public final class LastOperation implements Operation {
     private final Tree<Long, String> tree;
     private final PrintWriter stream;
 
-    public LastOperation(Tree<Long, String> tree, PrintWriter stream) {
+    public LastOperation(final Tree<Long, String> tree, final PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
 
     @Override
-    public void apply(List<String> args) {
-        stream.println(tree.last()
+    public void apply(final List<String> args) {
+        this.stream.println(this.tree.last()
                 .map(e -> String.format(
                         "%d = %s",
                         e.getKey(),

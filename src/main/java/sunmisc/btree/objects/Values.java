@@ -70,15 +70,15 @@ public final class Values implements Objects<Map.Entry<Long, String>> {
     @Override
     public Optional<Location> lastIndex() {
         try {
-            return Optional.of(new LongLocation(alloc.last()));
-        } catch (IOException e) {
+            return Optional.of(new LongLocation(this.alloc.last()));
+        } catch (final IOException e) {
             return Optional.empty();
         }
     }
 
     @Override
     public Iterator<Location> iterator() {
-        return StreamSupport.stream(alloc.spliterator(), false)
+        return StreamSupport.stream(this.alloc.spliterator(), false)
                 .map(e -> (Location) new LongLocation(e))
                 .iterator();
     }

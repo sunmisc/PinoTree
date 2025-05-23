@@ -17,24 +17,24 @@ public final class HeapTable implements Table {
 
     @Override
     public void delete() {
-        roots.delete();
-        values.delete();
-        nodes.delete();
+        this.roots.delete();
+        this.values.delete();
+        this.nodes.delete();
     }
 
     @Override
     public Objects<Version> roots() {
-        return roots;
+        return this.roots;
     }
 
     @Override
     public Objects<Map.Entry<Long, String>> values() {
-        return values;
+        return this.values;
     }
 
     @Override
     public Objects<Node> nodes() {
-        return nodes;
+        return this.nodes;
     }
 
     private static final class HeapObjects<T> implements Objects<T> {
@@ -42,37 +42,37 @@ public final class HeapTable implements Table {
         private final AtomicLong ids = new AtomicLong(-1);
 
         @Override
-        public Location put(T value) {
-            Location location = new LongLocation(ids.incrementAndGet());
-            map.put(location.offset(), value);
+        public Location put(final T value) {
+            final Location location = new LongLocation(this.ids.incrementAndGet());
+            this.map.put(location.offset(), value);
             return location;
         }
 
         @Override
-        public T fetch(Location index) {
-            return map.get(index.offset());
+        public T fetch(final Location index) {
+            return this.map.get(index.offset());
         }
 
         @Override
-        public void free(Iterable<Location> indexes) {
-            indexes.forEach(map::remove);
+        public void free(final Iterable<Location> indexes) {
+            indexes.forEach(this.map::remove);
         }
 
         @Override
         public Optional<Location> lastIndex() {
-            final long i = ids.get();
+            final long i = this.ids.get();
             return i < 0 ? Optional.empty() : Optional.of(new LongLocation(i));
         }
 
         @Override
         public void delete() {
-            map.clear();
-            ids.set(-1);
+            this.map.clear();
+            this.ids.set(-1);
         }
 
         @Override
         public Iterator<Location> iterator() {
-            return map.keySet()
+            return this.map.keySet()
                     .stream()
                     .map(e -> (Location)new LongLocation(e))
                     .iterator();

@@ -8,22 +8,22 @@ public final class TimeVersion implements Version {
     private final long offset;
     private final LocalDateTime timestamp;
 
-    public TimeVersion(long offset) {
+    public TimeVersion(final long offset) {
         this(offset, LocalDateTime.now());
     }
 
-    public TimeVersion(long offset, LocalDateTime timestamp) {
+    public TimeVersion(final long offset, final LocalDateTime timestamp) {
         this.offset = offset;
         this.timestamp = timestamp;
     }
 
     @Override
     public LocalDateTime timestamp() {
-        return timestamp;
+        return this.timestamp;
     }
 
     @Override
     public long offset() {
-        return offset;
+        return this.offset;
     }
 }

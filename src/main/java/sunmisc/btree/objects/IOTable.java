@@ -23,7 +23,7 @@ public final class IOTable implements Table {
         this(makeFile(name));
     }
 
-    private static File makeFile(String name) {
+    private static File makeFile(final String name) {
         final File file = new File(name);
         if (!file.exists()) {
             file.mkdirs();

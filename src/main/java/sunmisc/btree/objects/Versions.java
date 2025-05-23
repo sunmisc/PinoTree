@@ -41,7 +41,7 @@ public final class Versions implements Objects<Version> {
                     .toInstant()
                     .toEpochMilli());
             data.writeLong(node.offset());
-            final Page page = alloc.alloc();
+            final Page page = this.alloc.alloc();
             page.write(new DataInputStream(
                     new ByteArrayInputStream(bytes.toByteArray())
             ));
@@ -79,7 +79,7 @@ public final class Versions implements Objects<Version> {
                 final long off = input.readLong();
                 nodes.add(new LongLocation(off));
             }
-            table.nodes().free(nodes);
+            this.table.nodes().free(nodes);
         } catch (final IOException e) {
             throw new RuntimeException(e);
         }
@@ -97,15 +97,15 @@ public final class Versions implements Objects<Version> {
     @Override
     public Optional<Location> lastIndex() {
         try {
-            return Optional.of(new LongLocation(alloc.last()));
-        } catch (Exception e) {
+            return Optional.of(new LongLocation(this.alloc.last()));
+        } catch (final Exception e) {
             return Optional.empty();
         }
     }
 
     @Override
     public Iterator<Location> iterator() {
-        return StreamSupport.stream(alloc.spliterator(), false)
+        return StreamSupport.stream(this.alloc.spliterator(), false)
                 .map(e -> (Location) new LongLocation(e))
                 .iterator();
     }

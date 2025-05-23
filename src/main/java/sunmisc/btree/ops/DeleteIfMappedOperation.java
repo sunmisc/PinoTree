@@ -7,20 +7,20 @@ import java.util.List;
 public final class DeleteIfMappedOperation implements Operation {
     private final Tree<Long, String> tree;
 
-    public DeleteIfMappedOperation(Tree<Long, String> tree) {
+    public DeleteIfMappedOperation(final Tree<Long, String> tree) {
         this.tree = tree;
     }
 
     @Override
-    public void apply(List<String> args) {
+    public void apply(final List<String> args) {
         final int n = args.size();
         if ((n & 1) != 0) {
             throw new InternalError("length is odd");
         }
         for (int i = 0; i < n; i += 2) {
-            long key = Long.parseLong(args.get(i));
-            String value = args.get(i + 1);
-            tree.delete(key, value);
+            final long key = Long.parseLong(args.get(i));
+            final String value = args.get(i + 1);
+            this.tree.delete(key, value);
         }
     }
     @Override

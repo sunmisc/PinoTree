@@ -10,17 +10,17 @@ public final class GetOperation implements Operation {
     private final Tree<Long, String> tree;
     private final PrintWriter stream;
 
-    public GetOperation(Tree<Long, String> tree, PrintWriter stream) {
+    public GetOperation(final Tree<Long, String> tree, final PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
 
     @Override
-    public void apply(List<String> args) {
-        StringJoiner joiner = new StringJoiner(", ", "[", "]");
-        for (String arg : args) {
+    public void apply(final List<String> args) {
+        final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        for (final String arg : args) {
             final long key = Long.parseLong(arg);
-            tree.get(key).ifPresentOrElse(val -> {
+            this.tree.get(key).ifPresentOrElse(val -> {
                 joiner.add(String.format("%s = %s", key, val));
             }, () -> {
                 joiner.add(String.format("%s = empty", key));

@@ -22,16 +22,16 @@ public final class MutBtree implements Tree<Long, String> {
     }
 
     private Optional<Node> fetchRoot() {
-        return table.roots()
+        return this.table.roots()
                 .lastObject()
                 .map(e -> this.table.nodes().fetch(e));
     }
 
     @Override 
     public void put(final Long key, final String value) {
-        lock.lock();
+        this.lock.lock();
         try {
-            Objects<Version> versions = table.roots();
+            final Objects<Version> versions = this.table.roots();
             final Split split = versions.lastObject()
                     .map(e -> this.table.nodes().fetch(e))
                     .orElseGet(() -> new LeafNode(this.table, List.of()))
@@ -49,20 +49,20 @@ public final class MutBtree implements Tree<Long, String> {
             final Version version = new TimeVersion(newRoot.offset());
             versions.put(version);
         } finally {
-            lock.unlock();
+            this.lock.unlock();
         }
     }
 
     @Override
     public Optional<String> get(final Long key) {
-        return fetchRoot().flatMap(x -> x.search(key));
+        return this.fetchRoot().flatMap(x -> x.search(key));
     }
 
     @Override
     public void delete(final Long key) {
-        lock.lock();
+        this.lock.lock();
         try {
-            Objects<Version> versions = table.roots();
+            final Objects<Version> versions = this.table.roots();
             versions.lastObject()
                     .map(e -> this.table.nodes().fetch(e))
                     .ifPresent(prev -> {
@@ -74,15 +74,15 @@ public final class MutBtree implements Tree<Long, String> {
                         versions.put(version);
                     });
         } finally {
-            lock.unlock();
+            this.lock.unlock();
         }
     }
 
     @Override
-    public void delete(Long key, String value) {
-        lock.lock();
+    public void delete(final Long key, final String value) {
+        this.lock.lock();
         try {
-            Objects<Version> versions = table.roots();
+            final Objects<Version> versions = this.table.roots();
             versions.lastObject()
                     .map(e -> this.table.nodes().fetch(e))
                     .ifPresent(prev -> {
@@ -94,51 +94,55 @@ public final class MutBtree implements Tree<Long, String> {
                         versions.put(version);
                     });
         } finally {
-            lock.unlock();
+            this.lock.unlock();
         }
     }
 
     @Override
     public Optional<Map.Entry<Long, String>> first() {
-        return fetchRoot()
+        return this.fetchRoot()
                 .flatMap(Node::firstEntry)
                 .map(raw -> Map.entry(raw.key(), raw.value().value()));
     }
 
     @Override
     public Optional<Map.Entry<Long, String>> last() {
-        return fetchRoot()
+        return this.fetchRoot()
                 .flatMap(Node::lastEntry)
                 .map(raw -> Map.entry(raw.key(), raw.value().value()));
     }
 
     @Override
-    public SequencedMap<Long, String> rangeSearch(Long minKey, Long maxKey) {
+    public SequencedMap<Long, String> rangeSearch(final Long minKey, final Long maxKey) {
         if (minKey > maxKey) {
             throw new IllegalArgumentException("minKey > maxKey");
         }
-        return fetchRoot()
+        return this.fetchRoot()
                 .map(e -> e.rangeSearch(minKey, maxKey))
                 .orElse(Collections.emptyNavigableMap());
     }
 
     @Override
     public int size() {
-        return fetchRoot()
+        return this.fetchRoot()
                 .map(this::count)
                 .orElse(0);
     }
-    private int count(Node node) {
+    private int count(final Node node) {
         if (node.isLeaf()) {
             return node.size();
         }
-        return node.children().stream().reduce(0,
-                (a, b) -> a + count(b), Integer::sum);
+        return node.children()
+                .stream()
+                .reduce(0,
+                        (a, b) -> a + this.count(b),
+                        Integer::sum
+                );
     }
 
     @Override
     public Iterator<Map.Entry<Long, String>> iterator() {
-        return fetchRoot()
+        return this.fetchRoot()
                 .map(prev -> StreamSupport.stream(prev.spliterator(), false)
                         .map(e -> Map.entry(e.key(), e.value().value()))
                         .iterator()
@@ -147,27 +151,8 @@ public final class MutBtree implements Tree<Long, String> {
 
     @Override
     public String toString() {
-        StringJoiner joiner = new StringJoiner(", ", "[", "]");
-        forEach(e -> joiner.add(e.toString()));
+        final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        this.forEach(e -> joiner.add(e.toString()));
         return joiner.toString();
-    }
-
-    @Override
-    public Node root() {
-        return fetchRoot().orElseThrow();
-    }
-    public static void main(String[] args) {
-        MutBtree tree = new MutBtree();
-
-        tree.put(1L, "one");
-        tree.put(2L, "two");
-        tree.put(3L, "three");
-        tree.put(5L, "five");
-
-
-        System.out.println("3 "+tree.first());
-        SequencedMap<Long, String> range = tree.rangeSearch(2L, 4L);
-        System.out.println(range);
-        System.out.println(tree.size());
     }
 }

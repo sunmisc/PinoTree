@@ -14,26 +14,26 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class LinearSearchTest {
     @ParameterizedTest
     @ValueSource(ints = {16, 64, 128})
-    public void test(int size) {
-        List<Long> keys = ThreadLocalRandom.current()
+    public void test(final int size) {
+        final List<Long> keys = ThreadLocalRandom.current()
                 .longs(size, 0, 100_000)
                 .distinct()
                 .sorted()
                 .boxed()
                 .toList();
         final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
-        for (long k : keys) {
-            int expected = model.search(keys, k);
-            int actual = Collections.binarySearch(keys, k);
+        for (final long k : keys) {
+            final int expected = model.search(keys, k);
+            final int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +
                     " expected " + expected + " actual " + actual);
         }
     }
     @ParameterizedTest
     @ValueSource(ints = {16, 64, 128})
-    public void testRandAcc(int size) {
-        long seed = ThreadLocalRandom.current().nextLong();
-        List<Long> keys = LongStream.range(0, 100_000)
+    public void testRandAcc(final int size) {
+        final long seed = ThreadLocalRandom.current().nextLong();
+        final List<Long> keys = LongStream.range(0, 100_000)
                 .map(e -> e +
                         new Random(seed).nextInt(0, size))
                 .distinct()
@@ -42,9 +42,9 @@ public class LinearSearchTest {
                 .toList();
         final RegressionSearch<Long> model = new LongRegressionSearch().addAll(keys);
         for (int i = 0; i < keys.size(); i++) {
-            long k = ThreadLocalRandom.current().nextLong(0, 100_000);
-            int expected = model.search(keys, k);
-            int actual = Collections.binarySearch(keys, k);
+            final long k = ThreadLocalRandom.current().nextLong(0, 100_000);
+            final int expected = model.search(keys, k);
+            final int actual = Collections.binarySearch(keys, k);
             assertEquals(expected, actual, "Key " + k +
                     " expected " + expected + " actual " + actual);
         }

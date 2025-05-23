@@ -58,18 +58,18 @@ public final class Malloc implements Alloc {
                 index = polled.getAsLong();
             } else {
                 index = this.tail();
-                header.put(CTL, index + pageSize);
+                this.header.put(CTL, index + this.pageSize);
             }
-            header.put(LAST, index);
-            updateHeader(raf);
+            this.header.put(LAST, index);
+            this.updateHeader(raf);
             return new PageImpl(index, this.pageSize, this.file);
         }
     }
 
-    private void updateHeader(RandomAccessFile raf) throws IOException {
+    private void updateHeader(final RandomAccessFile raf) throws IOException {
         raf.seek(0);
-        raf.writeLong(header.get(LAST));
-        raf.writeLong(header.get(CTL));
+        raf.writeLong(this.header.get(LAST));
+        raf.writeLong(this.header.get(CTL));
     }
 
     @Override
@@ -88,14 +88,14 @@ public final class Malloc implements Alloc {
         this.removals.clear();
         try (final RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
             raf.setLength(0);
-            header.remove(LAST);
-            header.remove(CTL);
+            this.header.remove(LAST);
+            this.header.remove(CTL);
         }
     }
 
     private long tail() {
-        return header.computeIfAbsent(CTL, off -> {
-            try (final RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+        return this.header.computeIfAbsent(CTL, off -> {
+            try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
                 raf.seek(off);
                 return raf.readLong();
             } catch (final IOException ex) {
@@ -106,8 +106,8 @@ public final class Malloc implements Alloc {
 
     @Override
     public long last() {
-        return header.computeIfAbsent(LAST, off -> {
-            try (final RandomAccessFile raf = new RandomAccessFile(file, "r")) {
+        return this.header.computeIfAbsent(LAST, off -> {
+            try (final RandomAccessFile raf = new RandomAccessFile(this.file, "r")) {
                 raf.seek(off);
                 return raf.readLong();
             } catch (final IOException ex) {
@@ -117,15 +117,15 @@ public final class Malloc implements Alloc {
     }
 
     private long size() {
-        return Math.divideExact(tail() - HEADER_SIZE, this.pageSize);
+        return Math.divideExact(this.tail() - HEADER_SIZE, this.pageSize);
     }
 
     @Override
     public Iterator<Long> iterator() {
-        final long size = size() * Long.BYTES;
+        final long size = this.size() * Long.BYTES;
         return LongStream.iterate( Long.BYTES,
                 value -> value <= size,
-                operand -> operand + pageSize
+                operand -> operand + this.pageSize
         ).iterator();
     }
 }

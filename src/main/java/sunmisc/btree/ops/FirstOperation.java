@@ -9,14 +9,14 @@ public final class FirstOperation implements Operation {
     private final Tree<Long, String> tree;
     private final PrintWriter stream;
 
-    public FirstOperation(Tree<Long, String> tree, PrintWriter stream) {
+    public FirstOperation(final Tree<Long, String> tree, final PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
 
     @Override
-    public void apply(List<String> args) {
-        stream.println(tree.first()
+    public void apply(final List<String> args) {
+        this.stream.println(this.tree.first()
                 .map(e -> String.format(
                         "%d = %s",
                         e.getKey(),

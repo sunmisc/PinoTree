@@ -14,36 +14,36 @@ public final class PageImpl implements Page {
     private final int size;
     private final File file;
 
-    public PageImpl(long offset, int size, File file) {
+    public PageImpl(final long offset, final int size, final File file) {
         this.offset = offset;
         this.size = size;
         this.file = file;
     }
 
     @Override
-    public void write(InputStream buffer) throws IOException {
+    public void write(final InputStream buffer) throws IOException {
         // todo:
-        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
-            byte[] bytes = buffer.readAllBytes();
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+            final byte[] bytes = buffer.readAllBytes();
             if (bytes.length > this.size) {
                 throw new IllegalArgumentException(String.format(
                         "stream size is larger than page size %s > %s",
                         bytes.length, this.size
                 ));
             }
-            raf.seek(offset);
+            raf.seek(this.offset);
             raf.write(bytes);
         }
     }
 
     @Override
     public InputStream read() throws IOException {
-        try (RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
+        try (final RandomAccessFile raf = new RandomAccessFile(this.file, "rw")) {
             return new ByteBufferBackedInputStream(
                     raf.getChannel().map(
                             FileChannel.MapMode.READ_ONLY,
-                            offset,
-                            size
+                            this.offset,
+                            this.size
                     )
             );
         }
@@ -51,6 +51,6 @@ public final class PageImpl implements Page {
 
     @Override
     public long offset() {
-        return offset;
+        return this.offset;
     }
 }

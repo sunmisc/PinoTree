@@ -30,8 +30,8 @@ public class MutTreeTest {
             map.pollFirstEntry();
         }
         for (long i = 0; i < 10000; ++i) {
-            String expected = map.get(i);
-            String actual = bTree.get(i).orElse(null);
+            final String expected = map.get(i);
+            final String actual = bTree.get(i).orElse(null);
             assertEquals(expected, actual,
                     "Key " + i + " (expected: " + expected + ", actual: " + actual + ")");
         }
@@ -46,8 +46,8 @@ public class MutTreeTest {
             bTree.put(i, i+"");
         }
         for (long i = 0; i < MAX_SIZE; ++i) {
-            String expected = map.get(i);
-            String actual = bTree.get(i).orElse(null);
+            final String expected = map.get(i);
+            final String actual = bTree.get(i).orElse(null);
             assertEquals(expected, actual,
                     "Key " + i + " (expected: " + expected + ", actual: " + actual + ")");
         }
@@ -113,7 +113,7 @@ public class MutTreeTest {
             expectedMap.remove(keyToRemove);
             try {
                 actualBTree.delete(keyToRemove);
-            } catch (Exception ignored) { }
+            } catch (final Exception ignored) { }
 
             // Add operation
             expectedMap.put(keyToAdd, keyToAdd+"");

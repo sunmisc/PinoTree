@@ -34,7 +34,7 @@ public final class CachedObjects<T> implements Objects<T> {
 
     @Override
     public T fetch(final Location index) {
-        return this.cache.get(index.offset(), _ -> origin.fetch(index));
+        return this.cache.get(index.offset(), _ -> this.origin.fetch(index));
     }
 
     @Override
@@ -55,7 +55,7 @@ public final class CachedObjects<T> implements Objects<T> {
 
     @Override
     public Optional<Location> lastIndex() {
-        return origin.lastIndex();
+        return this.origin.lastIndex();
     }
 
     @Override
@@ -65,6 +65,6 @@ public final class CachedObjects<T> implements Objects<T> {
 
     @Override
     public Iterator<Location> iterator() {
-        return origin.iterator();
+        return this.origin.iterator();
     }
 }

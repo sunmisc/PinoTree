@@ -38,7 +38,7 @@ public interface Node extends Iterable<Entry>{
     int maxChildren();
 
     default boolean isLeaf() {
-        return children().isEmpty();
+        return this.children().isEmpty();
     }
 
     default boolean satisfiesMinChildren() { return this.size() >= this.minChildren(); } // Проверяет минимальную заполненность

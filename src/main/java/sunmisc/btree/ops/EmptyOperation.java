@@ -5,7 +5,7 @@ import java.util.List;
 public final class EmptyOperation implements Operation {
 
     @Override
-    public void apply(List<String> args) {
+    public void apply(final List<String> args) {
         System.out.println("Empty operation");
     }
 

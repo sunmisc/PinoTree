@@ -30,16 +30,16 @@ public final class DbBack {
         this(DEFAULT_PORT);
     }
 
-    public DbBack(int port) {
+    public DbBack(final int port) {
         this.port = port;
     }
 
-    public static void main(String[] args) {
+    public static void main(final String[] args) {
         new DbBack().start(Exit.NEVER);
     }
 
-    public void start(Exit exit) {
-        try (ServerSocket serverSocket = new ServerSocket(port)) {
+    public void start(final Exit exit) {
+        try (final ServerSocket serverSocket = new ServerSocket(this.port)) {
             System.out.printf("""
             Commands:
                    put [table] [key] [value] ... <key_n> <value_n>
@@ -51,32 +51,32 @@ public final class DbBack {
                    range [table] [from] [to]
                    size [table]
             Server started on port %s%n
-            """, port);
+            """, this.port);
             while (!exit.ready()) {
-                try (Socket clientSocket = serverSocket.accept();
-                     BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                     PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+                try (final Socket clientSocket = serverSocket.accept();
+                     final BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                     final PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
 
-                    String command = in.readLine();
+                    final String command = in.readLine();
                     if (command == null) {
                         continue;
                     }
-                    handle(command, out);
-                } catch (IOException e) {
+                    this.handle(command, out);
+                } catch (final IOException e) {
                     System.err.println("Error handling client: " + e.getMessage());
                 }
             }
-        } catch (IOException e) {
+        } catch (final IOException e) {
             System.err.println("Server error: " + e.getMessage());
         }
     }
 
-    private void handle(String query, PrintWriter out) {
-        String[] parts = query.split(" ");
-        String command = parts[0];
-        String table = parts[1];
-        Tree<Long, String> tree = tables.get(table);
-        Map<String, Operation> ops = Stream.of(
+    private void handle(final String query, final PrintWriter out) {
+        final String[] parts = query.split(" ");
+        final String command = parts[0];
+        final String table = parts[1];
+        final Tree<Long, String> tree = this.tables.get(table);
+        final Map<String, Operation> ops = Stream.of(
                 new PutOperation(tree),
                 new DeleteOperation(tree),
                 new DeleteIfMappedOperation(tree),
@@ -90,7 +90,7 @@ public final class DbBack {
                 Operation::name,
                 Function.identity())
         );
-        List<String> params = List.of(parts).subList(2, parts.length);
+        final List<String> params = List.of(parts).subList(2, parts.length);
 
         new ErrorHandleOperation(
                 System.out,

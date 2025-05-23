@@ -54,7 +54,7 @@ public final class Nodes implements Objects<Node> {
                     data.writeLong(key);
                 }
             }
-            Page page = this.alloc.alloc();
+            final Page page = this.alloc.alloc();
             page.write(new ByteArrayInputStream(bytes.toByteArray()));
             return page;
         } catch (final IOException e) {
@@ -65,7 +65,7 @@ public final class Nodes implements Objects<Node> {
     @Override
     public Node fetch(final Location index) {
         try {
-            final Page page = alloc.fetch(index);
+            final Page page = this.alloc.fetch(index);
             final DataInputStream input = new DataInputStream(page.read());
             final int childSize = input.readInt();
             if (childSize == 0) {
@@ -118,8 +118,8 @@ public final class Nodes implements Objects<Node> {
     @Override
     public Optional<Location> lastIndex() {
         try {
-            return Optional.of(new LongLocation(alloc.last()));
-        } catch (IOException e) {
+            return Optional.of(new LongLocation(this.alloc.last()));
+        } catch (final IOException e) {
             return Optional.empty();
         }
     }
@@ -135,7 +135,7 @@ public final class Nodes implements Objects<Node> {
 
     @Override
     public Iterator<Location> iterator() {
-        return StreamSupport.stream(alloc.spliterator(), false)
+        return StreamSupport.stream(this.alloc.spliterator(), false)
                 .map(e -> (Location) new LongLocation(e))
                 .iterator();
     }

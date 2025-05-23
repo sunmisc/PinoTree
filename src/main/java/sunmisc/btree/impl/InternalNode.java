@@ -17,12 +17,12 @@ public final class InternalNode extends AbstractNode {
 
     @Override
     public int minChildren() {
-        return Constants.INTERNAL_MIN_CHILDREN;
+        return INTERNAL_MIN_CHILDREN;
     }
 
     @Override
     public int maxChildren() {
-        return Constants.INTERNAL_MAX_CHILDREN;
+        return INTERNAL_MAX_CHILDREN;
     }
 
     @Override
@@ -41,7 +41,7 @@ public final class InternalNode extends AbstractNode {
 
     @Override
     public Iterator<Entry> iterator() {
-        return children().stream()
+        return this.children().stream()
                 .flatMap(child -> StreamSupport.stream(child.spliterator(), false))
                 .iterator();
     }
@@ -110,7 +110,7 @@ public final class InternalNode extends AbstractNode {
     }
 
     @Override
-    public IndexedNode delete(long key, String value) {
+    public IndexedNode delete(final long key, final String value) {
         final int rawIndex = Collections.binarySearch(this.keys(), key);
         final int index = rawIndex >= 0 ? rawIndex + 1 : -rawIndex - 1;
         final IndexedNode child = this.children().get(index);
@@ -230,13 +230,13 @@ public final class InternalNode extends AbstractNode {
     }
 
     @Override
-    public SequencedMap<Long, String> rangeSearch(long minKey, long maxKey) {
-        SequencedMap<Long, String> result = new LinkedHashMap<>();
-        int startIdx = Collections.binarySearch(keys, minKey);
+    public SequencedMap<Long, String> rangeSearch(final long minKey, final long maxKey) {
+        final SequencedMap<Long, String> result = new LinkedHashMap<>();
+        int startIdx = Collections.binarySearch(this.keys, minKey);
         startIdx = startIdx >= 0 ? startIdx : -startIdx - 1;
-        for (int i = startIdx; i < children().size(); i++) {
-            if (i == 0 || keys.get(i - 1) <= maxKey) {
-                result.putAll(children().get(i).rangeSearch(minKey, maxKey));
+        for (int i = startIdx; i < this.children().size(); i++) {
+            if (i == 0 || this.keys.get(i - 1) <= maxKey) {
+                result.putAll(this.children().get(i).rangeSearch(minKey, maxKey));
             } else {
                 break;
             }

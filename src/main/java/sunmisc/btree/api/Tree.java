@@ -21,7 +21,4 @@ public interface Tree<K,V> extends Iterable<Map.Entry<K, V>> {
     SequencedMap<Long, String> rangeSearch(K from, K to);
 
     int size();
-
-    @Deprecated
-    Node root();
 }

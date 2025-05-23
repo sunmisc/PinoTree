@@ -9,14 +9,14 @@ public final class SizeOperation implements Operation {
     private final Tree<Long, String> tree;
     private final PrintWriter stream;
 
-    public SizeOperation(Tree<Long, String> tree, PrintWriter stream) {
+    public SizeOperation(final Tree<Long, String> tree, final PrintWriter stream) {
         this.tree = tree;
         this.stream = stream;
     }
 
     @Override
-    public void apply(List<String> args) {
-        stream.println(tree.size());
+    public void apply(final List<String> args) {
+        this.stream.println(this.tree.size());
     }
 
     @Override

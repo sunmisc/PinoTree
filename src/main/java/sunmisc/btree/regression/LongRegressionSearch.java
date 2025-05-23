@@ -15,11 +15,11 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
                 0, 0, 0, 0, 0);
     }
 
-    public LongRegressionSearch(long sumX, int sumY,
-                                double sumXX, double sumYY, double sumXY,
-                                int count,
+    public LongRegressionSearch(final long sumX, final int sumY,
+                                final double sumXX, final double sumYY, final double sumXY,
+                                final int count,
                                 // cached
-                                double slope, double intercept, int window) {
+                                final double slope, final double intercept, final int window) {
         this.sumX = sumX;
         this.sumY = sumY;
         this.sumXX = sumXX;
@@ -34,41 +34,41 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
 
     @Override
     public RegressionSearch<Long> addAll(final List<Long> values) {
-        long sx = sumX;
-        int sy = sumY + sumArithmeticProgression(values.size());
-        double xx = sumXX, yy = sumYY, xy = sumXY;
-        int c = count;
-        int n = values.size();
+        long sx = this.sumX;
+        final int sy = this.sumY + sumArithmeticProgression(values.size());
+        double xx = this.sumXX, yy = this.sumYY, xy = this.sumXY;
+        final int c = this.count;
+        final int n = values.size();
         // Accumulate sums
-        for (long value : values) {
+        for (final long value : values) {
             sx += value;
         }
         // Update count
-        int newCount = c + n;
-        double xbar = sx / (double) newCount;
-        double ybar = sy / (double) newCount;
+        final int newCount = c + n;
+        final double xbar = sx / (double) newCount;
+        final double ybar = sy / (double) newCount;
 
         // Compute xx, yy, xy using single loop
         for (int i = 0; i < n; i++) {
-            double dx = values.get(i) - xbar;
-            double dy = i - ybar;
+            final double dx = values.get(i) - xbar;
+            final double dy = i - ybar;
             xx += dx * dx;
             yy += dy * dy;
             xy += dx * dy;
         }
         // Adjust for previous data if count > 0
         if (c > 0) {
-            double dx = (sumX / (double) c) - xbar; // Approximate previous values
+            final double dx = (this.sumX / (double) c) - xbar; // Approximate previous values
             for (int i = 0; i < c; i++) {
-                double dy = i - ybar;
+                final double dy = i - ybar;
                 xx += dx * dx;
                 yy += dy * dy;
                 xy += dx * dy;
             }
         }
         // Compute slope and intercept
-        double slope = xx != 0 ? xy / xx : 0;
-        double intercept = newCount > 0 ? (sy - slope * sx) / newCount : 0;
+        final double slope = xx != 0 ? xy / xx : 0;
+        final double intercept = newCount > 0 ? (sy - slope * sx) / newCount : 0;
 
         final double errorSquare = Math.max(0, yy - xy * xy / xx);
         final int window = (int) Math.min(
@@ -80,22 +80,22 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
 
     @Override
     public RegressionSearch<Long> add(final int index, final Long value) {
-        if (count == 0) {
+        if (this.count == 0) {
             return new LongRegressionSearch(value, index,
                     0, 0, 0,
                     1, 0, 0, 1);
         }
-        final int fact1 = count + 1;
-        final double fact2 = (double) count / fact1;
-        final long sx = Math.addExact(sumX, value); // Sum of value (x)
-        final int sy = sumY + index;                // Sum of index (y)
-        final double xbar = sumX / (double) count;      // Mean of value
-        final double ybar = sumY / (double) count;      // Mean of index
+        final int fact1 = this.count + 1;
+        final double fact2 = (double) this.count / fact1;
+        final long sx = Math.addExact(this.sumX, value); // Sum of value (x)
+        final int sy = this.sumY + index;                // Sum of index (y)
+        final double xbar = this.sumX / (double) this.count;      // Mean of value
+        final double ybar = this.sumY / (double) this.count;      // Mean of index
         final double dx = value - xbar;             // value as x
         final double dy = index - ybar;             // index as y
-        final double xx = sumXX + dx * dx * fact2;
-        final double yy = sumYY + dy * dy * fact2;
-        final double xy = sumXY + dx * dy * fact2;
+        final double xx = this.sumXX + dx * dx * fact2;
+        final double yy = this.sumYY + dy * dy * fact2;
+        final double xy = this.sumXY + dx * dy * fact2;
 
         final double slope = xx == 0 ? 0 : xy / xx; // Guard against division-by-zero
         final double intercept = (sy - slope * sx) / fact1;
@@ -110,20 +110,20 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
 
     @Override
     public RegressionSearch<Long> remove(final int index, final Long value) {
-        if (count == 0) {
+        if (this.count == 0) {
             return this;
         }
-        final int fact1 = count - 1;
-        final double fact2 = (double) count / fact1;
-        final long sx = Math.subtractExact(sumX, value); // Sum of value (x)
-        final int sy = sumY - index;                    // Sum of index (y)
-        final double xbar = sumX / (double) count;          // Mean of value
-        final double ybar = sumY / (double) count;          // Mean of index
+        final int fact1 = this.count - 1;
+        final double fact2 = (double) this.count / fact1;
+        final long sx = Math.subtractExact(this.sumX, value); // Sum of value (x)
+        final int sy = this.sumY - index;                    // Sum of index (y)
+        final double xbar = this.sumX / (double) this.count;          // Mean of value
+        final double ybar = this.sumY / (double) this.count;          // Mean of index
         final double dx = value - xbar;                 // value as x
         final double dy = index - ybar;                 // index as y
-        final double xx = sumXX - dx * dx * fact2;
-        final double yy = sumYY - dy * dy * fact2;
-        final double xy = sumXY - dx * dy * fact2;
+        final double xx = this.sumXX - dx * dx * fact2;
+        final double yy = this.sumYY - dy * dy * fact2;
+        final double xy = this.sumXY - dx * dy * fact2;
 
         final double slope = xx == 0 ? 0 : xy / xx; // Guard against division-by-zero
         final double intercept = (sy - slope * sx) / fact1;
@@ -137,15 +137,15 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
     }
 
     @Override
-    public int search(List<Long> values, Long key) {
+    public int search(final List<Long> values, final Long key) {
         final int n = values.size();
         if (n == 0) {
             return -1;
         }
         final int lastIndex = n - 1;
-        final int guess = predict(key, lastIndex);
-        final int low = Math.max(0, guess - window);
-        final int high = Math.min(lastIndex, guess + window);
+        final int guess = this.predict(key, lastIndex);
+        final int low = Math.max(0, guess - this.window);
+        final int high = Math.min(lastIndex, guess + this.window);
         final int index = binarySearch(values, key, low, high);
         if (index >= 0) {
             return index;
@@ -157,12 +157,12 @@ public final class LongRegressionSearch implements RegressionSearch<Long> {
 
     @Override
     public double mse() {
-        final double errorSquare = Math.max(0, sumYY - sumXY * sumXY / sumXX);
-        return errorSquare / (count - 2);
+        final double errorSquare = Math.max(0, this.sumYY - this.sumXY * this.sumXY / this.sumXX);
+        return errorSquare / (this.count - 2);
     }
 
     private int predict(final long key, final int upperBound) {
-        final double raw = slope * key + intercept; // fma
+        final double raw = this.slope * key + this.intercept; // fma
         final long result = Math.round(raw);
         return Math.clamp(result, 0, upperBound);
     }

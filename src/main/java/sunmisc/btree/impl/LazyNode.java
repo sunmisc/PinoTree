@@ -58,7 +58,7 @@ public final class LazyNode implements IndexedNode {
     }
 
     @Override
-    public IndexedNode delete(long key, String value) {
+    public IndexedNode delete(final long key, final String value) {
         return this.lazy.get().delete(key, value);
     }
 
@@ -98,8 +98,8 @@ public final class LazyNode implements IndexedNode {
     }
 
     @Override
-    public SequencedMap<Long, String> rangeSearch(long minKey, long maxKey) {
-        return lazy.get().rangeSearch(minKey, maxKey);
+    public SequencedMap<Long, String> rangeSearch(final long minKey, final long maxKey) {
+        return this.lazy.get().rangeSearch(minKey, maxKey);
     }
 
     @Override

@@ -6,10 +6,6 @@ import sunmisc.btree.regression.LongRegressionSearch;
 import sunmisc.btree.regression.RegressionSearch;
 
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-
-import static sunmisc.btree.impl.Constants.LEAF_MAX_CHILDREN;
-import static sunmisc.btree.impl.Constants.LEAF_MIN_CHILDREN;
 
 public final class LeafNode extends AbstractNode {
     private final RegressionSearch<Long> longRegressionSearch;
@@ -34,25 +30,25 @@ public final class LeafNode extends AbstractNode {
 
     @Override
     public IndexedNode withoutFirst() {
-        RegressionSearch<Long> regression = longRegressionSearch;
-        if (!addresses.isEmpty()) {
-            final long val = addresses.getFirst().key();
+        RegressionSearch<Long> regression = this.longRegressionSearch;
+        if (!this.addresses.isEmpty()) {
+            final long val = this.addresses.getFirst().key();
             regression = regression.remove(0, val);
         }
         return this.createNewNode(Utils.withoutFirst(this.addresses), regression);
     }
 
     private IndexedNode head() {
-        final int last = addresses.size() - 1;
-        RegressionSearch<Long> regression = longRegressionSearch;
+        final int last = this.addresses.size() - 1;
+        RegressionSearch<Long> regression = this.longRegressionSearch;
         if (last >= 0) {
-            long val = addresses.get(last).key();
+            final long val = this.addresses.get(last).key();
             regression = regression.remove(last, val);
         }
         return this.createNewNode(Utils.withoutLast(this.addresses), regression);
     }
 
-    private IndexedNode createNewNode(final List<Entry> keys, RegressionSearch<Long> regression) {
+    private IndexedNode createNewNode(final List<Entry> keys, final RegressionSearch<Long> regression) {
         final Node leaf = new LeafNode(this.table, keys, regression);
         return new LazyNode(() -> leaf, this.table.nodes().put(leaf));
     }
@@ -68,25 +64,25 @@ public final class LeafNode extends AbstractNode {
         if (idx < 0) {
             throw new IllegalArgumentException();
         }
-        final long val = addresses.get(idx).key();
+        final long val = this.addresses.get(idx).key();
         return this.createNewNode(
                 Utils.withoutIdx(idx, this.addresses),
-                longRegressionSearch.remove(idx, val)
+                this.longRegressionSearch.remove(idx, val)
         );
     }
 
     @Override
-    public IndexedNode delete(long key, String value) {
+    public IndexedNode delete(final long key, final String value) {
         final int idx = this.longRegressionSearch.search(this.keys(), key);
         if (idx < 0) {
             throw new NoSuchElementException("No entry found for key: " + key);
         }
-        final Entry entry = addresses.get(idx);
+        final Entry entry = this.addresses.get(idx);
         final long val = entry.key();
         if (entry.value().value().equals(value)) {
             return this.createNewNode(
                     Utils.withoutIdx(idx, this.addresses),
-                    longRegressionSearch.remove(idx, val)
+                    this.longRegressionSearch.remove(idx, val)
             );
         }
         throw new IllegalArgumentException(
@@ -125,11 +121,11 @@ public final class LeafNode extends AbstractNode {
         final Entry entry = new OEntry(key, value, this.table.values().put(Map.entry(key, value)));
 
         final List<Entry> newKeys;
-        RegressionSearch<Long> newModel = longRegressionSearch;
+        RegressionSearch<Long> newModel = this.longRegressionSearch;
         if (idx < 0) {
             idx = -idx - 1;
             newKeys = Utils.append(idx, entry, this.addresses);
-            newModel = longRegressionSearch.add(idx, key);
+            newModel = this.longRegressionSearch.add(idx, key);
         } else {
             newKeys = Utils.set(idx, entry, this.addresses);
         }
@@ -176,7 +172,7 @@ public final class LeafNode extends AbstractNode {
 
         return List.of(
                 this.createNewNode(newKeys,
-                        longRegressionSearch.add(this.addresses.size(), stolenKey.key())),
+                        this.longRegressionSearch.add(this.addresses.size(), stolenKey.key())),
                 right.withoutFirst()
         );
     }
@@ -202,11 +198,11 @@ public final class LeafNode extends AbstractNode {
     }
 
     @Override
-    public SequencedMap<Long, String> rangeSearch(long minKey, long maxKey) {
-        SequencedMap<Long, String> result = new LinkedHashMap<>();
-        System.out.println(keys());
-        for (Entry entry : addresses) {
-            long key = entry.key();
+    public SequencedMap<Long, String> rangeSearch(final long minKey, final long maxKey) {
+        final SequencedMap<Long, String> result = new LinkedHashMap<>();
+        System.out.println(this.keys());
+        for (final Entry entry : this.addresses) {
+            final long key = entry.key();
             if (key >= minKey && key <= maxKey) {
                 result.put(key, entry.value().value());
             }
@@ -216,7 +212,7 @@ public final class LeafNode extends AbstractNode {
 
     @Override
     public Iterator<Entry> iterator() {
-        return addresses.iterator();
+        return this.addresses.iterator();
     }
 
     private static final class KeyListWrapper extends AbstractList<Long> {
