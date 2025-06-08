@@ -1,0 +1,24 @@
+
+name: Build project
+on: [push]
+jobs:
+  build:
+    runs-on: windows-2022
+    steps:
+      - name: Checkout the source code
+        uses: actions/checkout@v4.2.2
+      - name: GitHub Action for GraalVM
+        uses: graalvm/setup-graalvm@v1.3.3
+        with:
+          java-version: '23'
+          java-package: 'jdk'
+          distribution: 'liberica'
+      - name: Run Maven build
+        run: mvn clean package -DskipTests -B
+      - name: Build a self-contained executable
+        run: makensis sfx.nsi
+      - name: Upload a Build Artifact
+        uses: actions/upload-artifact@v4.6.2
+        with:
+          name: btree-meme
+          path: btree-meme.exe
