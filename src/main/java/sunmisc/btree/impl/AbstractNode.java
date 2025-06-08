@@ -8,7 +8,7 @@ import java.util.Collections;
 import java.util.List;
 
 public abstract class AbstractNode implements Node {
-    public static final int ORDER = 128; // 64
+    public static final int ORDER = 170; // 64
 
     public static final int LEAF_MIN_CHILDREN = Math.ceilDiv(ORDER, 2) - 1;
     public static final int LEAF_MAX_CHILDREN = ORDER - 1;

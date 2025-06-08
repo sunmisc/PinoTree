@@ -5,7 +5,6 @@ import sunmisc.btree.api.Location;
 import java.io.File;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.List;
 import java.util.OptionalLong;
 
 public final class LifoQueue {
@@ -40,10 +39,6 @@ public final class LifoQueue {
                 raf.writeLong(idx.offset());
             }
         }
-    }
-
-    public void add(final Location index) throws IOException {
-        this.addAll(List.of(index));
     }
 
     public void clear() throws IOException {

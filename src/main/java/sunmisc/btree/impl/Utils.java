@@ -33,11 +33,11 @@ public final class Utils {
     }
 
     public static <V> List<V> withoutLast(final List<V> list) {
-        return list.isEmpty() ? List.of() : list.subList(0, list.size() - 1);
+        return list.isEmpty() ? List.of() : List.copyOf(list.subList(0, list.size() - 1));
     }
 
     public static <T> List<T> withoutFirst(final List<T> list) {
-        return list.isEmpty() ? List.of() : list.subList(1, list.size());
+        return list.isEmpty() ? List.of() : List.copyOf(list.subList(1, list.size()));
     }
 
     public static <T> List<T> unshift(final T value, final List<T> list) {

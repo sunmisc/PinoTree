@@ -18,7 +18,7 @@ public final class LastOperation implements Operation {
     public void apply(final List<String> args) {
         this.stream.println(this.tree.last()
                 .map(e -> String.format(
-                        "%d = %s",
+                        "%s=%s",
                         e.getKey(),
                         e.getValue())
                 ).orElse("tree is empty"));

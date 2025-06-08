@@ -18,7 +18,7 @@ public final class FirstOperation implements Operation {
     public void apply(final List<String> args) {
         this.stream.println(this.tree.first()
                 .map(e -> String.format(
-                        "%d = %s",
+                        "%d=%s",
                         e.getKey(),
                         e.getValue())
                 ).orElse("tree is empty"));

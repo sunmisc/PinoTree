@@ -14,7 +14,7 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 public final class Values implements Objects<Map.Entry<Long, String>> {
-    private static final int PAGE_SIZE = 512;
+    private static final int PAGE_SIZE = 256;
     private final Alloc alloc;
 
     public Values(final File parent) {

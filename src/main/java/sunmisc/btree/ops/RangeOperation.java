@@ -23,7 +23,7 @@ public final class RangeOperation implements Operation {
                 .entrySet()
                 .stream()
                 .map(e -> String.format(
-                        "%s = %s",
+                        "%s=%s",
                         e.getKey(), e.getValue())
                 )
                 .collect(Collectors.joining("\n")));

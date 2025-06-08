@@ -32,6 +32,8 @@
     <properties>
         <junit.version>5.11.4</junit.version>
         <jmh.version>1.37</jmh.version>
+        <compiler.maven.plugin.version>3.14.0</compiler.maven.plugin.version>
+        <native.maven.plugin.version>0.10.6</native.maven.plugin.version>
     </properties>
 
     <build>
@@ -39,7 +41,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.14.0</version>
+                <version>${compiler.maven.plugin.version}</version>
                 <configuration>
                     <source>23</source>
                     <target>23</target>
@@ -50,6 +52,33 @@
                             <version>${jmh.version}</version>
                         </path>
                     </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.graalvm.buildtools</groupId>
+                <artifactId>native-maven-plugin</artifactId>
+                <version>${native.maven.plugin.version}</version>
+                <extensions>true</extensions>
+                <executions>
+                    <execution>
+                        <id>build-native</id>
+                        <goals>
+                            <goal>compile-no-fork</goal>
+                        </goals>
+                        <phase>package</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <mainClass>sunmisc.btree.server.DbBack</mainClass>
+                    <systemProperties>
+                        <java.awt.headless>false</java.awt.headless>
+                    </systemProperties>
+                    <buildArgs>
+                        <buildArg>-O3</buildArg>
+                        <buildArg>--no-fallback</buildArg>
+                        <buildArg>-march=compatibility</buildArg>
+                    </buildArgs>
+                    <outputDirectory>${project.build.directory}/native-executable</outputDirectory>
                 </configuration>
             </plugin>
         </plugins>
@@ -98,7 +127,6 @@
             <version>2.2</version>
             <scope>test</scope>
         </dependency>
-
         <dependency>
             <groupId>org.openjdk.jmh</groupId>
             <artifactId>jmh-core</artifactId>

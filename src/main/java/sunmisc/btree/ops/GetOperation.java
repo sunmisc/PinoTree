@@ -17,13 +17,13 @@ public final class GetOperation implements Operation {
 
     @Override
     public void apply(final List<String> args) {
-        final StringJoiner joiner = new StringJoiner(", ", "[", "]");
+        final StringJoiner joiner = new StringJoiner("\n");
         for (final String arg : args) {
             final long key = Long.parseLong(arg);
             this.tree.get(key).ifPresentOrElse(val -> {
-                joiner.add(String.format("%s = %s", key, val));
+                joiner.add(String.format("%s=%s", key, val));
             }, () -> {
-                joiner.add(String.format("%s = empty", key));
+                joiner.add(String.format("%s=empty", key));
             });
         }
         this.stream.println(joiner);

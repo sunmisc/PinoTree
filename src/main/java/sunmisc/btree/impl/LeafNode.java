@@ -85,8 +85,9 @@ public final class LeafNode extends AbstractNode {
                     this.longRegressionSearch.remove(idx, val)
             );
         }
-        throw new IllegalArgumentException(
-                "Value mismatch for key " + key + ": expected '" + value + "', found '" + entry.value().value() + "'"
+        throw new IllegalArgumentException(String.format(
+                "Value mismatch for key %d: expected '%s', found '%s'",
+                key, value, entry.value().value())
         );
     }
 
@@ -152,21 +153,26 @@ public final class LeafNode extends AbstractNode {
 
     @Override
     public Optional<Entry> firstEntry() {
-        return this.addresses.isEmpty() ? Optional.empty() : Optional.of(this.addresses.getFirst());
+        return this.addresses.isEmpty()
+                ? Optional.empty()
+                : Optional.of(this.addresses.getFirst());
     }
 
     @Override
     public Optional<Entry> lastEntry() {
-        return this.addresses.isEmpty() ? Optional.empty() : Optional.of(this.addresses.getLast());
+        return this.addresses.isEmpty()
+                ? Optional.empty()
+                : Optional.of(this.addresses.getLast());
     }
 
     @Override
     public List<IndexedNode> stealFirstKeyFrom(final Node right) {
         final Entry stolenKey = right.firstEntry().orElseThrow();
-
         final List<Entry> newKeys = Utils.append(
-                this.addresses.size(), stolenKey, this.addresses);
-
+                this.addresses.size(),
+                stolenKey,
+                this.addresses
+        );
         return List.of(
                 this.createNewNode(newKeys,
                         this.longRegressionSearch.add(this.addresses.size(), stolenKey.key())),
@@ -197,7 +203,6 @@ public final class LeafNode extends AbstractNode {
     @Override
     public SequencedMap<Long, String> rangeSearch(final long minKey, final long maxKey) {
         final SequencedMap<Long, String> result = new LinkedHashMap<>();
-        System.out.println(this.keys());
         for (final Entry entry : this.addresses) {
             final long key = entry.key();
             if (key >= minKey && key <= maxKey) {

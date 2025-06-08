@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.SequencedMap;
 
-public interface Node extends Iterable<Entry>{
+public interface Node extends Iterable<Entry> {
+
     Optional<Entry> firstEntry();
 
     Optional<Entry> lastEntry();
@@ -18,30 +19,38 @@ public interface Node extends Iterable<Entry>{
     IndexedNode delete(long key, String value);
 
     IndexedNode merge(Node other);
+    
+    SequencedMap<Long, String> rangeSearch(long minKey, long maxKey);
 
-    List<IndexedNode> children();
+    int size();
 
     List<Long> keys();
+
+    int minChildren();
+
+    int maxChildren();
+
+    @Deprecated
+    IndexedNode withoutFirst();
 
     List<IndexedNode> stealFirstKeyFrom(Node right);
 
     List<IndexedNode> giveLastKeyTo(Node right);
 
-    SequencedMap<Long, String> rangeSearch(long minKey, long maxKey);
+    List<IndexedNode> children();
 
-    int size();
-
-    @Deprecated
-    IndexedNode withoutFirst();
-
-    int minChildren();
-    int maxChildren();
 
     default boolean isLeaf() {
         return this.children().isEmpty();
     }
 
-    default boolean satisfiesMinChildren() { return this.size() >= this.minChildren(); } // Проверяет минимальную заполненность
-    default boolean satisfiesMaxChildren() { return this.size() <= this.maxChildren(); } // Проверяет максимальную заполненность
-    default boolean shouldSplit() { return !this.satisfiesMaxChildren(); } //
+    default boolean satisfiesMinChildren() {
+        return this.size() >= this.minChildren();
+    }
+    default boolean satisfiesMaxChildren() {
+        return this.size() <= this.maxChildren();
+    }
+    default boolean shouldSplit() {
+        return !this.satisfiesMaxChildren();
+    }
 }
