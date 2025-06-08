@@ -56,12 +56,12 @@ Connect to the server using a TCP client (e.g., netcat or a custom client):
 
 
 Execute commands, for example:
-``
+```
 put mytable key1 value1 key2 value2
 get mytable key1
 range mytable key1 key3
 size mytable
-``
+```
 
 # Technical Details
 
