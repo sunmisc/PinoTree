@@ -77,6 +77,8 @@
                         <buildArg>-O3</buildArg>
                         <buildArg>--no-fallback</buildArg>
                         <buildArg>-march=compatibility</buildArg>
+                        <buildArg>-H:ReflectionConfigurationFiles=reflect-config.json</buildArg>
+                        <buildArg>-H:DynamicProxyConfigurationFiles=proxy-config.json</buildArg>
                     </buildArgs>
                     <outputDirectory>${project.build.directory}/native-executable</outputDirectory>
                 </configuration>
